@@ -1,7 +1,7 @@
 {
   "name": "酌有韶",
   "short_name": "酌有韶",
-  "description": "日用、夜用二合一：專案、待辦、週月計畫、習慣、狀態、靈感",
+  "description": "朝暮二合一：專案、待辦、週月計畫、習慣、狀態、靈感",
   "lang": "zh-Hant",
   "start_url": "./",
   "scope": "./",

@@ -1,5 +1,5 @@
 /* 酌有韶 service worker: keep the app shell on the device so it opens offline. */
-const CACHE = 'yousao-v2';
+const CACHE = 'yousao-v3';
 const SHELL = [
   './', 'index.html', 'manifest.json', 'fonts/yousao-hand.woff',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'

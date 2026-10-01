@@ -88,7 +88,7 @@ if(m!=='night'&&m!=='both')m='day';r.dataset.realm=m;if(m==='day')r.dataset.them
   color-scheme: dark;
 }
 
-/* 夜用：整頁換成靛藍（放在深色規則後面，所以不管系統是亮是暗都以它為準） */
+/* 暮：整頁換成靛藍（放在深色規則後面，所以不管系統是亮是暗都以它為準） */
 :root[data-realm="night"] {
   --bg: #141A33; --surface: #1B2344; --surface-2: #252F58; --line: #34406F;
   --fg: #E8ECFC; --fg-soft: #A0ACD6; --accent: #97ABF2; --on-accent: #10173A;
@@ -136,13 +136,13 @@ button { cursor: pointer; }
 }
 .top-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
 .seg { display: flex; gap: 2px; padding: 3px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); min-width: 0; }
-.seg button { flex: 1; min-width: 0; min-height: 38px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--fg-soft); font-size: 17px; white-space: nowrap; }
+.seg button { flex: 1; min-width: 0; min-height: 38px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--fg-soft); font-size: 21px; letter-spacing: .12em; text-indent: .12em; white-space: nowrap; }
 .seg button:hover { color: var(--fg); }
 .seg button[aria-checked="true"] { background: var(--accent); color: var(--on-accent); }
 .seg button[aria-checked="true"][data-m="both"] { background: linear-gradient(100deg, #A8575F, #4D61B5); color: #FFFFFF; }
 .topbar .seg { flex: 1; max-width: 320px; margin: 0 auto; }
 .seg.small { max-width: 220px; }
-.seg.small button { min-height: 36px; font-size: 16px; }
+.seg.small button { min-height: 36px; font-size: 19px; }
 .icon-btn {
   width: 46px; height: 46px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface);
   color: var(--accent-ink); display: grid; place-items: center; flex: none;
@@ -367,11 +367,11 @@ button { cursor: pointer; }
 .toast { position: fixed; left: 50%; bottom: calc(24px + var(--safe-bottom, 0px)); transform: translateX(-50%); z-index: 60; margin: 0; max-width: min(92vw, 460px); padding: 10px 20px; border-radius: 999px; background: var(--fg); color: var(--bg); font-size: 16.5px; text-align: center; }
 .backup-box { width: 100%; min-height: 120px; font-size: 14px; font-family: ui-monospace, Menlo, Consolas, monospace; -webkit-text-stroke: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; resize: vertical; }
 
-/* ---------- 日用／夜用：色標、星號、畫面標題 ---------- */
-.rtag { display: inline-block; flex: none; padding: 0 9px; border-radius: 999px; font-size: 13.5px; line-height: 1.6; white-space: nowrap; }
+/* ---------- 朝／暮：色標、星號、畫面標題 ---------- */
+.rtag { display: inline-block; flex: none; min-width: 28px; padding: 0 9px; border-radius: 999px; font-size: 15px; line-height: 1.55; text-align: center; white-space: nowrap; }
 .rtag.day { background: var(--day-bg); color: var(--day-fg); }
 .rtag.night { background: var(--night-bg); color: var(--night-fg); }
-.rtag.mini { padding: 0 6px; font-size: 12.5px; }
+.rtag.mini { min-width: 24px; padding: 0 6px; font-size: 14px; }
 button.realm-toggle { min-height: 46px; padding: 0 16px; font-size: 16px; border: 1px solid transparent; border-radius: 14px; }
 button.realm-toggle:hover { border-color: currentColor; }
 .view-head { margin-bottom: 18px; }
@@ -506,7 +506,7 @@ button.realm-toggle:hover { border-color: currentColor; }
 <div class="app">
   <header class="topbar">
     <button type="button" class="icon-btn" id="menu-btn" aria-label="開啟選單" aria-expanded="false" aria-controls="drawer"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
-    <div class="seg" id="mode-seg" role="radiogroup" aria-label="日用、夜用，或兩邊一起看"></div>
+    <div class="seg" id="mode-seg" role="radiogroup" aria-label="朝、暮，或朝暮一起看"></div>
     <div class="top-actions" id="top-actions"></div>
     <h1 class="sr-only" id="top-title">酌有韶</h1>
   </header>
@@ -557,9 +557,10 @@ button.realm-toggle:hover { border-color: currentColor; }
     { key: 'inbox',    label: '靈感收集箱', icon: 'inbox' },
   ];
   const VIEWNAME = Object.fromEntries(NAV.map(n => [n.key, n.label]));
-  // 日用 = 平常的事務；夜用 = 角色、算圖等創作。同時 = 兩邊混在一起看。
-  const REALM = { day: { label: '日用', short: '日' }, night: { label: '夜用', short: '夜' } };
-  const MODES = [{ key: 'day', label: '日用' }, { key: 'night', label: '夜用' }, { key: 'both', label: '同時' }];
+  // 朝（key: day）= 平常的事務；暮（key: night）= 角色、算圖等創作；朝暮（key: both）= 兩邊混在一起看。
+  // key 是存在資料裡的內部代號，改顯示名稱時不用動資料。
+  const REALM = { day: { label: '朝', short: '朝' }, night: { label: '暮', short: '暮' } };
+  const MODES = [{ key: 'day', label: '朝' }, { key: 'night', label: '暮' }, { key: 'both', label: '朝暮' }];
   const MOOD_WORDS = ['很差', '不太好', '普通', '不錯', '很好'];
   const ENERGY_WORDS = ['沒電', '偏低', '普通', '充足', '滿格'];
 
@@ -713,7 +714,7 @@ button.realm-toggle:hover { border-color: currentColor; }
   const App = {
     view: lsGet('yousao.view') || 'projects',
     mode: lsGet('yousao.mode') || 'day',           // day | night | both
-    addRealm: lsGet('yousao.addRealm') === 'night' ? 'night' : 'day', // 「同時」模式下新增東西預設放哪一面
+    addRealm: lsGet('yousao.addRealm') === 'night' ? 'night' : 'day', // 「朝暮」模式下新增東西預設放哪一面
     anchor: todayStr(),
     filter: lsGet('yousao.filter') || 'all',
     onlyStar: false,
@@ -725,14 +726,14 @@ button.realm-toggle:hover { border-color: currentColor; }
   let sheetState = null;
   let lastFocus = null;
 
-  /* ---------- 日用／夜用：換整頁配色 ---------- */
-  const realmOf = r => (r && r.realm === 'night' ? 'night' : 'day');   // 沒標的舊資料一律算日用
+  /* ---------- 朝／暮：換整頁配色 ---------- */
+  const realmOf = r => (r && r.realm === 'night' ? 'night' : 'day');   // 沒標的舊資料一律算朝
   const inMode = r => App.mode === 'both' || realmOf(r) === App.mode;
   const newRealm = () => (App.mode === 'both' ? App.addRealm : App.mode);
   function applyTheme() {
     const root = document.documentElement;
     root.dataset.realm = App.mode;
-    // 日用固定亮色玫瑰；夜用固定靛藍（CSS 處理）；同時跟隨系統亮暗
+    // 朝固定亮色玫瑰；暮固定靛藍（CSS 處理）；朝暮跟隨系統亮暗
     if (App.mode === 'day') root.dataset.theme = 'light'; else root.removeAttribute('data-theme');
     try {
       const sysDark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
@@ -873,7 +874,7 @@ button.realm-toggle:hover { border-color: currentColor; }
     if (mini) t.setAttribute('aria-label', REALM[realm].label);
     return t;
   }
-  // 「同時」模式下，新增東西時用來選放在哪一面；單面模式不需要，回傳 null
+  // 「朝暮」模式下，新增東西時用來選放在哪一面；單面模式不需要，回傳 null
   function realmToggle() {
     if (App.mode !== 'both') return null;
     const b = el('button', 'realm-toggle rtag ' + App.addRealm, REALM[App.addRealm].label);
@@ -881,7 +882,7 @@ button.realm-toggle:hover { border-color: currentColor; }
     const sync = () => {
       b.className = 'realm-toggle rtag ' + App.addRealm;
       b.textContent = REALM[App.addRealm].label;
-      b.setAttribute('aria-label', '新增到' + REALM[App.addRealm].label + '（按一下切換日用／夜用）');
+      b.setAttribute('aria-label', '新增到' + REALM[App.addRealm].label + '（按一下切換朝／暮）');
     };
     sync();
     b.addEventListener('click', () => {
@@ -891,14 +892,14 @@ button.realm-toggle:hover { border-color: currentColor; }
     });
     return { node: b, get: () => App.addRealm };
   }
-  // 表單裡的「屬於日用／夜用」選擇
+  // 表單裡的「屬於朝／暮」選擇
   function realmField(initial, onChange) {
     let val = initial === 'night' ? 'night' : 'day';
     const w = el('div', 'field');
     w.appendChild(el('span', 'lbl', '屬於'));
     const seg = el('div', 'seg small');
     seg.setAttribute('role', 'radiogroup');
-    seg.setAttribute('aria-label', '屬於日用或夜用');
+    seg.setAttribute('aria-label', '屬於朝或暮');
     const btns = ['day', 'night'].map(k => {
       const b = el('button', null, REALM[k].label);
       b.type = 'button';
@@ -1074,7 +1075,7 @@ button.realm-toggle:hover { border-color: currentColor; }
     if (!items.length) {
       const e = el('div', 'empty');
       const other = everything.length - items.length;
-      e.append(roseSvg(), el('h3', null, App.mode === 'day' ? '日用花圃還是空的' : App.mode === 'night' ? '夜用花圃還是空的' : '花圃還是空的'),
+      e.append(roseSvg(), el('h3', null, App.mode === 'day' ? '朝的花圃還是空的' : App.mode === 'night' ? '暮的花圃還是空的' : '花圃還是空的'),
         el('p', null, other
           ? '另一面已經有 ' + other + ' 個專案了，按上面的開關可以過去看，或在這裡種下第一朵。'
           : Store.mode() === 'db'
@@ -1419,8 +1420,8 @@ button.realm-toggle:hover { border-color: currentColor; }
     const s3 = el('span'); s3.append(el('i', 'dot d'), document.createTextNode('已完成'));
     lg.append(s1, s2, s3);
     if (App.mode === 'both') {
-      const r1 = el('span'); r1.append(el('i', 'sw rd'), document.createTextNode('日用'));
-      const r2 = el('span'); r2.append(el('i', 'sw rn'), document.createTextNode('夜用'));
+      const r1 = el('span'); r1.append(el('i', 'sw rd'), document.createTextNode(REALM.day.label));
+      const r2 = el('span'); r2.append(el('i', 'sw rn'), document.createTextNode(REALM.night.label));
       lg.append(r1, r2);
     }
     main.appendChild(lg);
