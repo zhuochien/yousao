@@ -1,0 +1,2163 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>酌有韶</title>
+<meta name="theme-color" content="#F6EBE8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C1315" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="酌有韶">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<script>
+(function(){var r=document.documentElement,m='day';try{m=localStorage.getItem('yousao.mode')||'day'}catch(e){}
+if(m!=='night'&&m!=='both')m='day';r.dataset.realm=m;if(m==='day')r.dataset.theme='light'})();
+</script>
+<style>
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);--sticky-top:0px}
+@font-face{font-family:"Yousao Hand";src:url("fonts/yousao-hand.woff") format("woff");font-weight:100 900;font-style:normal;font-display:swap}
+/* Layout: sticky top bar with one menu icon (left) that slides a drawer in; four views (projects, today, week, month);
+   day / task / project forms open as a bottom sheet on phones and a centred card on wide screens.
+   Palette: dried rose. Dusty rose accent over wine-brown ink; each project status keeps its own muted hue. */
+:root {
+  --font-body: "Yousao Hand", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+  --font-display: var(--font-body);
+
+  --bg: #F6EBE8;
+  --surface: #FCF6F3;
+  --surface-2: #F1E1DD;
+  --line: #E4CFCB;
+  --fg: #4A2F34;
+  --fg-soft: #86666C;
+  --accent: #A8575F;
+  --on-accent: #FFF7F5;
+  --accent-soft: #EBCBCB;
+  --accent-ink: #7A3340;
+  --scrim: rgba(60, 28, 34, .42);
+  --shadow: 0 1px 2px rgba(110, 47, 59, .06), 0 6px 18px rgba(110, 47, 59, .07);
+
+  --rose-3: #DDAEB1;
+  --rose-2: #C2808A;
+  --rose-1: #A04F5C;
+  --rose-edge: #6E2F3B;
+
+  --st-doing-bg: #F2CDCB;  --st-doing-fg: #8A3B45;
+  --st-todo-bg: #F1DFC4;   --st-todo-fg: #7A5524;
+  --st-paused-bg: #E4DADF; --st-paused-fg: #6B5A62;
+  --st-chore-bg: #D9E3D2;  --st-chore-fg: #4B6244;
+  --st-new-bg: #E5D6EA;    --st-new-fg: #66487A;
+  --warn-bg: #F1DFC4;      --warn-fg: #7A5524;
+
+  --day-c: #B0606B;   --day-bg: #F2D3D3;   --day-fg: #8A3B45;
+  --night-c: #5468B8; --night-bg: #D6DCF3; --night-fg: #37468A;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1C1315; --surface: #271A1D; --surface-2: #332326; --line: #432E33;
+    --fg: #F3E3E0; --fg-soft: #B79AA0; --accent: #D8A0A5; --on-accent: #2A1519;
+    --accent-soft: #4A2E34; --accent-ink: #F0BFC3; --scrim: rgba(8, 3, 4, .62); --shadow: none;
+    --rose-3: #E8B9BB; --rose-2: #D18F96; --rose-1: #B5646F; --rose-edge: #2E171C;
+    --st-doing-bg: #4F2C33;  --st-doing-fg: #F0B6BB;
+    --st-todo-bg: #4A3A22;   --st-todo-fg: #E8C894;
+    --st-paused-bg: #3A3035; --st-paused-fg: #BBA8B0;
+    --st-chore-bg: #2E3D2B;  --st-chore-fg: #B5CDA9;
+    --st-new-bg: #3D2F47;    --st-new-fg: #D3BCE0;
+    --warn-bg: #4A3A22;      --warn-fg: #E8C894;
+    --day-c: #D8A0A5;   --day-bg: #4F2C33;   --day-fg: #F0B6BB;
+    --night-c: #8EA2F0; --night-bg: #2B3560; --night-fg: #BDC9FA;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1C1315; --surface: #271A1D; --surface-2: #332326; --line: #432E33;
+  --fg: #F3E3E0; --fg-soft: #B79AA0; --accent: #D8A0A5; --on-accent: #2A1519;
+  --accent-soft: #4A2E34; --accent-ink: #F0BFC3; --scrim: rgba(8, 3, 4, .62); --shadow: none;
+  --rose-3: #E8B9BB; --rose-2: #D18F96; --rose-1: #B5646F; --rose-edge: #2E171C;
+  --st-doing-bg: #4F2C33;  --st-doing-fg: #F0B6BB;
+  --st-todo-bg: #4A3A22;   --st-todo-fg: #E8C894;
+  --st-paused-bg: #3A3035; --st-paused-fg: #BBA8B0;
+  --st-chore-bg: #2E3D2B;  --st-chore-fg: #B5CDA9;
+  --st-new-bg: #3D2F47;    --st-new-fg: #D3BCE0;
+  --warn-bg: #4A3A22;      --warn-fg: #E8C894;
+  --day-c: #D8A0A5;   --day-bg: #4F2C33;   --day-fg: #F0B6BB;
+  --night-c: #8EA2F0; --night-bg: #2B3560; --night-fg: #BDC9FA;
+  color-scheme: dark;
+}
+
+/* 夜用：整頁換成靛藍（放在深色規則後面，所以不管系統是亮是暗都以它為準） */
+:root[data-realm="night"] {
+  --bg: #141A33; --surface: #1B2344; --surface-2: #252F58; --line: #34406F;
+  --fg: #E8ECFC; --fg-soft: #A0ACD6; --accent: #97ABF2; --on-accent: #10173A;
+  --accent-soft: #2D3A72; --accent-ink: #C6D2FF; --scrim: rgba(5, 8, 22, .66); --shadow: none;
+  --rose-3: #EBC1D2; --rose-2: #D296B1; --rose-1: #B06B8A; --rose-edge: #10163A;
+  --st-doing-bg: #33407F;  --st-doing-fg: #C7D3FF;
+  --st-todo-bg: #4A3F2A;   --st-todo-fg: #EBD39A;
+  --st-paused-bg: #2F3556; --st-paused-fg: #A9B2D6;
+  --st-chore-bg: #244A4A;  --st-chore-fg: #A6DCCF;
+  --st-new-bg: #4A2E5E;    --st-new-fg: #E3C2F0;
+  --warn-bg: #4A3F2A;      --warn-fg: #EBD39A;
+  --day-c: #E0A6BE;   --day-bg: #4A2D4F;   --day-fg: #F3C2D8;
+  --night-c: #97ABF2; --night-bg: #33407F; --night-fg: #C9D3FF;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; background: var(--bg); }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.65;
+  font-weight: 400;
+  font-synthesis-weight: none;
+  -webkit-text-stroke: .35px currentColor;
+  -webkit-tap-highlight-color: transparent;
+}
+body.lock { overflow: hidden; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ic { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  position: sticky; top: var(--sticky-top, 0px); z-index: 20;
+  display: flex; align-items: center; gap: 12px;
+  padding: calc(var(--safe-top, 0px) + 10px) 16px 10px;
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.top-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-end; }
+.seg { display: flex; gap: 2px; padding: 3px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); min-width: 0; }
+.seg button { flex: 1; min-width: 0; min-height: 38px; padding: 0 10px; border: 0; border-radius: 999px; background: transparent; color: var(--fg-soft); font-size: 17px; white-space: nowrap; }
+.seg button:hover { color: var(--fg); }
+.seg button[aria-checked="true"] { background: var(--accent); color: var(--on-accent); }
+.seg button[aria-checked="true"][data-m="both"] { background: linear-gradient(100deg, #A8575F, #4D61B5); color: #FFFFFF; }
+.topbar .seg { flex: 1; max-width: 320px; margin: 0 auto; }
+.seg.small { max-width: 220px; }
+.seg.small button { min-height: 36px; font-size: 16px; }
+.icon-btn {
+  width: 46px; height: 46px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface);
+  color: var(--accent-ink); display: grid; place-items: center; flex: none;
+}
+.icon-btn:hover { border-color: var(--accent); }
+.text-btn { height: 46px; padding: 0 18px; border-radius: 15px; border: 1px solid var(--line); background: var(--surface); color: var(--accent-ink); }
+.text-btn:hover { border-color: var(--accent); }
+
+.main { max-width: 1040px; margin: 0 auto; padding: 20px 16px calc(48px + var(--safe-bottom, 0px)); outline: none; }
+
+/* ---------- drawer ---------- */
+.scrim { position: fixed; inset: 0; z-index: 30; background: var(--scrim); }
+.drawer {
+  position: fixed; top: 0; bottom: 0; left: 0; z-index: 40; width: min(86vw, 330px);
+  display: flex; flex-direction: column; gap: 14px;
+  background: var(--surface); border-right: 1px solid var(--line);
+  padding: calc(var(--safe-top, 0px) + 14px) 14px calc(var(--safe-bottom, 0px) + 16px);
+  transform: translateX(-104%); transition: transform .24s ease, visibility 0s linear .24s; overflow-y: auto; visibility: hidden;
+}
+.drawer.open { transform: none; visibility: visible; transition: transform .24s ease, visibility 0s; box-shadow: 8px 0 30px rgba(40, 14, 20, .18); }
+.drawer-head { display: flex; align-items: center; gap: 10px; padding: 2px 4px 8px; }
+.drawer-head .logo { width: 40px; height: 40px; flex: none; }
+.drawer-name { flex: 1; font-size: 26px; letter-spacing: .16em; }
+.nav { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.nav button {
+  width: 100%; min-height: 56px; display: flex; align-items: center; gap: 14px; padding: 8px 16px;
+  border: 1px solid transparent; border-radius: 16px; background: transparent; text-align: left; font-size: 20px;
+}
+.nav button:hover { background: var(--surface-2); }
+.nav button[aria-current="page"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink); }
+.nav .nav-group { padding: 12px 16px 2px; font-size: 14px; letter-spacing: .24em; color: var(--fg-soft); }
+.nav .badge { margin-left: auto; min-width: 26px; padding: 0 8px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 14px; line-height: 1.7; text-align: center; }
+.drawer-sec { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 10px; font-size: 16px; color: var(--fg-soft); }
+.drawer-sec .row-pick { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.drawer-sec select { padding: 6px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 16px; }
+.drawer-link { display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 16px; border: 1px solid transparent; border-radius: 14px; background: transparent; text-align: left; font-size: 18px; color: var(--fg); width: 100%; }
+.drawer-link:hover { background: var(--surface-2); }
+.drawer details { font-size: 15.5px; }
+.drawer summary { cursor: pointer; padding: 6px 4px; }
+.drawer details p { margin: 6px 4px 0; line-height: 1.7; }
+.mode-note { margin: 0; font-size: 15px; }
+.credit { margin: 0; font-size: 13.5px; opacity: .85; }
+
+/* ---------- shared bits ---------- */
+.btn { padding: 8px 22px; min-height: 46px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--fg); }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.soft { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink); }
+.btn.armed { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.btn.small { min-height: 38px; padding: 4px 16px; font-size: 16px; }
+.vhead { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
+.vhead .range { flex: 1; min-width: 0; text-align: center; font-size: 24px; letter-spacing: .06em; }
+.vhead .range small { display: block; font-size: 15px; color: var(--fg-soft); letter-spacing: 0; line-height: 1.3; }
+.pill { position: relative; display: inline-flex; border-radius: 999px; background: var(--pill-bg); color: var(--pill-fg); }
+.pill select {
+  appearance: none; -webkit-appearance: none; font-size: 16px; color: inherit;
+  background: transparent; border: 0; padding: 5px 32px 5px 14px; border-radius: 999px; cursor: pointer;
+}
+.pill select option { color: var(--fg); background: var(--surface); }
+.pill::after {
+  content: ""; position: absolute; right: 14px; top: 50%; width: 5px; height: 5px;
+  border-right: 1.6px solid currentColor; border-bottom: 1.6px solid currentColor;
+  transform: translateY(-70%) rotate(45deg); pointer-events: none;
+}
+.pill.static { padding: 3px 14px; font-size: 15.5px; }
+.st-doing  { --pill-bg: var(--st-doing-bg);  --pill-fg: var(--st-doing-fg); }
+.st-todo   { --pill-bg: var(--st-todo-bg);   --pill-fg: var(--st-todo-fg); }
+.st-paused { --pill-bg: var(--st-paused-bg); --pill-fg: var(--st-paused-fg); }
+.st-chore  { --pill-bg: var(--st-chore-bg);  --pill-fg: var(--st-chore-fg); }
+.st-new    { --pill-bg: var(--st-new-bg);    --pill-fg: var(--st-new-fg); }
+.tag { display: inline-block; padding: 0 10px; border-radius: 999px; background: var(--surface-2); color: var(--fg-soft); font-size: 14px; line-height: 1.6; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.empty {
+  display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  padding: 40px 20px; border: 1.5px dashed var(--line); border-radius: 20px; color: var(--fg-soft);
+}
+.empty svg { width: 84px; height: 84px; opacity: .6; }
+.empty h3 { margin: 0; font-size: 26px; letter-spacing: .06em; color: var(--fg); font-weight: 400; }
+.empty p { margin: 0; font-size: 17.5px; max-width: 28em; text-wrap: balance; }
+.sec-title { margin: 22px 0 10px; font-size: 20px; letter-spacing: .08em; color: var(--accent-ink); font-weight: 400; display: flex; align-items: center; gap: 10px; }
+.sec-title .grow { flex: 1; }
+.card-box { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 8px 14px; box-shadow: var(--shadow); }
+.card-box.warn { background: var(--warn-bg); border-color: transparent; color: var(--warn-fg); }
+.hint { margin: 0; color: var(--fg-soft); font-size: 16px; }
+
+/* ---------- tasks ---------- */
+.task { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 4px 0; }
+.task + .task { border-top: 1px dashed var(--line); }
+.chk {
+  position: relative; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--accent); background: transparent;
+  color: var(--on-accent); display: grid; place-items: center; flex: none; padding: 0;
+}
+.chk::after { content: ""; position: absolute; inset: -10px; }
+.chk .ic { width: 18px; height: 18px; stroke-width: 2.6; opacity: 0; }
+.task.done .chk { background: var(--accent); }
+.task.done .chk .ic { opacity: 1; }
+.task-body { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; border: 0; background: none; text-align: left; padding: 6px 0; }
+.task-title { overflow-wrap: anywhere; }
+.task.done .task-title { text-decoration: line-through; color: var(--fg-soft); }
+.task-move { font-size: 15px; padding: 2px 12px; border-radius: 999px; border: 1px solid currentColor; background: transparent; flex: none; }
+.qadd { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+.qadd > input { flex: 1 1 150px; min-width: 0; padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); }
+.qopts { flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; color: var(--fg-soft); font-size: 15.5px; }
+.qopts input[type="date"] { padding: 6px 10px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 16px; }
+.chip.small { font-size: 15.5px; padding: 4px 14px; }
+.progress { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; margin-top: 10px; }
+.progress i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+
+/* ---------- projects view ---------- */
+.masthead { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; margin-bottom: 24px; }
+.mast-title { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.mast-title svg { width: 56px; height: 56px; flex: none; }
+.mast-name { margin: 0; font-size: clamp(40px, 11vw, 60px); font-weight: 400; letter-spacing: .16em; margin-right: -.16em; line-height: 1.25; }
+.mast-sub { margin: 0; color: var(--fg-soft); font-size: 17px; text-wrap: balance; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 20px; }
+@media (min-width: 720px) { .stats { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; } }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px 6px 12px; text-align: center; box-shadow: var(--shadow); }
+.stat b { display: block; font-size: 36px; line-height: 1.1; font-weight: 400; font-variant-numeric: tabular-nums; }
+.stat span { display: block; margin-top: 6px; font-size: 16px; color: var(--fg-soft); white-space: nowrap; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 18px; }
+.chip { font-size: 17px; padding: 8px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+.chip:hover { border-color: var(--accent); }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.bar .add { margin-left: auto; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.pcard { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; box-shadow: var(--shadow); }
+.pcard h3 { margin: 0; font-size: 21px; font-weight: 400; line-height: 1.45; overflow-wrap: anywhere; }
+.pcard p { margin: 0; font-size: 17.5px; color: var(--fg-soft); white-space: pre-line; overflow-wrap: anywhere; }
+.pcard .when { font-size: 16px; color: var(--accent-ink); }
+.pfoot { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding-top: 6px; }
+.pfoot .grow { flex: 1; }
+.link-btn { border: 0; background: none; color: var(--fg-soft); padding: 6px 10px; border-radius: 8px; font-size: 16px; }
+.link-btn:hover { color: var(--accent-ink); background: var(--surface-2); }
+
+/* ---------- today ---------- */
+.hero { display: flex; flex-direction: column; gap: 2px; margin-bottom: 14px; }
+.hero .big { font-size: clamp(38px, 10vw, 54px); letter-spacing: .08em; line-height: 1.2; }
+.hero .wd { font-size: 20px; color: var(--fg-soft); letter-spacing: .12em; }
+.proj-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 0; border: 0; background: none; width: 100%; text-align: left; }
+.proj-row + .proj-row { border-top: 1px dashed var(--line); }
+.proj-row .ptitle { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+
+/* ---------- week ---------- */
+.main.wide { max-width: 1360px; }
+.week { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 720px) { .week { grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); align-items: start; } }
+@media (min-width: 1240px) {
+  .week { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+  .day { padding: 12px 10px; }
+  .day .task-body { font-size: 16.5px; }
+  .day .chk { width: 26px; height: 26px; }
+  .day .chk .ic { width: 15px; height: 15px; }
+  .day .task { gap: 8px; }
+  .day-head .num { font-size: 26px; }
+}
+.day { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; box-shadow: var(--shadow); }
+.day.today { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.day.weekend { background: var(--surface-2); }
+.day-head { display: flex; align-items: baseline; gap: 8px; }
+.day-head .num { font-size: 28px; line-height: 1.1; }
+.day-head .wd { font-size: 16px; color: var(--fg-soft); white-space: nowrap; }
+.day-head .grow { flex: 1; }
+.day-add { width: 38px; height: 38px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--accent-ink); display: grid; place-items: center; align-self: center; }
+.day-add:hover { border-color: var(--accent); }
+.mini-proj { display: block; width: 100%; text-align: left; border: 0; padding: 3px 10px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-ink); font-size: 15.5px; line-height: 1.45; overflow-wrap: anywhere; }
+.mini-proj em { font-style: normal; opacity: .75; margin-left: 6px; font-size: 14px; }
+.day .task { min-height: 44px; }
+.day .empty-day { color: var(--fg-soft); font-size: 15px; opacity: .7; }
+
+/* ---------- month ---------- */
+.dow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; color: var(--fg-soft); font-size: 16px; margin-bottom: 6px; }
+.mgrid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.cell {
+  position: relative; min-width: 0; min-height: 70px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface);
+  padding: 6px 4px 6px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--fg);
+}
+.cell:hover { border-color: var(--accent); }
+.cell.out { opacity: .45; }
+.cell.today { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.cell .n { font-size: 18px; line-height: 1.2; }
+.cell.today .n { background: var(--accent); color: var(--on-accent); border-radius: 999px; padding: 0 8px; }
+.dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 100%; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fg); opacity: .8; }
+.dot.p { border-radius: 2px; background: var(--accent); opacity: 1; }
+.dot.d { background: var(--fg-soft); opacity: .35; }
+.lines { display: none; width: 100%; text-align: left; flex-direction: column; gap: 2px; }
+.line { display: block; width: 100%; font-size: 14px; line-height: 1.35; padding: 1px 6px; border-radius: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.line.p { background: var(--accent-soft); color: var(--accent-ink); }
+.line.t { color: var(--fg); }
+.line.t.done { text-decoration: line-through; color: var(--fg-soft); }
+.line.more { color: var(--fg-soft); }
+@media (min-width: 720px) {
+  .cell { min-height: 118px; align-items: stretch; text-align: left; padding: 8px 8px; gap: 6px; }
+  .cell .n { align-self: flex-start; }
+  .dots { display: none; }
+  .lines { display: flex; }
+}
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; font-size: 15px; color: var(--fg-soft); align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- sheet ---------- */
+.sheet-wrap { position: fixed; inset: 0; z-index: 50; background: var(--scrim); display: flex; align-items: flex-end; justify-content: center; }
+.sheet {
+  width: 100%; max-width: 580px; max-height: 90vh; max-height: 90dvh; overflow-y: auto; background: var(--surface);
+  border-radius: 24px 24px 0 0; padding: 20px 18px calc(24px + var(--safe-bottom, 0px)); border: 1px solid var(--line); outline: none;
+  animation: rise .22s ease;
+}
+@keyframes rise { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+@media (min-width: 720px) { .sheet-wrap { align-items: center; } .sheet { border-radius: 24px; } }
+.sheet h2 { margin: 0 0 14px; font-size: 26px; font-weight: 400; letter-spacing: .08em; }
+.sheet h2 small { font-size: 17px; color: var(--fg-soft); margin-left: 10px; letter-spacing: .04em; }
+.form { display: grid; gap: 14px; }
+.field { display: grid; gap: 6px; min-width: 0; }
+.field label { font-size: 15.5px; color: var(--fg-soft); }
+.field input, .field textarea, .field select {
+  font-size: 17px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; width: 100%; min-width: 0;
+}
+.field textarea { resize: vertical; min-height: 84px; }
+.field.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.field.two > div { display: grid; gap: 6px; min-width: 0; }
+.actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+.actions .grow { flex: 1; }
+.toast { position: fixed; left: 50%; bottom: calc(24px + var(--safe-bottom, 0px)); transform: translateX(-50%); z-index: 60; margin: 0; max-width: min(92vw, 460px); padding: 10px 20px; border-radius: 999px; background: var(--fg); color: var(--bg); font-size: 16.5px; text-align: center; }
+.backup-box { width: 100%; min-height: 120px; font-size: 14px; font-family: ui-monospace, Menlo, Consolas, monospace; -webkit-text-stroke: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; resize: vertical; }
+
+/* ---------- 日用／夜用：色標、星號、畫面標題 ---------- */
+.rtag { display: inline-block; flex: none; padding: 0 9px; border-radius: 999px; font-size: 13.5px; line-height: 1.6; white-space: nowrap; }
+.rtag.day { background: var(--day-bg); color: var(--day-fg); }
+.rtag.night { background: var(--night-bg); color: var(--night-fg); }
+.rtag.mini { padding: 0 6px; font-size: 12.5px; }
+button.realm-toggle { min-height: 46px; padding: 0 16px; font-size: 16px; border: 1px solid transparent; border-radius: 14px; }
+button.realm-toggle:hover { border-color: currentColor; }
+.view-head { margin-bottom: 18px; }
+.view-head h2 { margin: 0; font-size: clamp(32px, 9vw, 42px); font-weight: 400; letter-spacing: .1em; line-height: 1.3; }
+.view-head p { margin: 2px 0 0; color: var(--fg-soft); font-size: 17px; text-wrap: balance; }
+.star { width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--fg-soft); display: grid; place-items: center; flex: none; opacity: .7; }
+.star:hover { opacity: 1; }
+.star .ic { width: 22px; height: 22px; }
+.star.on { color: var(--st-todo-fg); opacity: 1; }
+.star.on .ic { fill: currentColor; }
+.star-mark { display: inline-flex; color: var(--st-todo-fg); }
+.star-mark .ic { width: 16px; height: 16px; fill: currentColor; }
+.task-note { flex-basis: 100%; font-size: 15px; line-height: 1.5; color: var(--fg-soft); white-space: pre-line; overflow-wrap: anywhere; }
+.pcard .ptasks { font-size: 15.5px; color: var(--fg-soft); }
+.pcard-head { display: flex; align-items: flex-start; gap: 8px; }
+.pcard-head h3 { flex: 1; min-width: 0; }
+
+/* ---------- 習慣打卡 ---------- */
+.habit { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 14px 10px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.habit-top { display: flex; align-items: center; gap: 12px; }
+.habit .chk { width: 42px; height: 42px; }
+.habit .chk .ic { width: 24px; height: 24px; }
+.habit.done-today .chk { background: var(--accent); }
+.habit.done-today .chk .ic { opacity: 1; }
+.habit-meta { flex: 1; min-width: 0; }
+.habit-meta h3 { margin: 0; font-size: 21px; font-weight: 400; line-height: 1.4; overflow-wrap: anywhere; }
+.habit-sub { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 12px; color: var(--fg-soft); font-size: 16px; }
+.streak { display: inline-flex; align-items: center; gap: 4px; color: var(--accent-ink); }
+.streak .ic { width: 18px; height: 18px; }
+.week7 { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.wk { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0 2px; border: 0; border-radius: 12px; background: none; color: var(--fg-soft); font-size: 14px; line-height: 1.3; }
+.wk i { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; }
+.wk i .ic { width: 15px; height: 15px; stroke-width: 3; opacity: 0; }
+.wk.on i { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.wk.on i .ic { opacity: 1; }
+.wk.today span { color: var(--accent-ink); }
+.task.habit-row.done .task-title { text-decoration: none; color: var(--fg); }
+
+/* ---------- 今日狀態 ---------- */
+.mood-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 14px 14px 16px; box-shadow: var(--shadow); display: grid; gap: 12px; }
+.scale-row { display: grid; gap: 6px; }
+.scale-row .lbl { font-size: 16px; color: var(--fg-soft); }
+.scale { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.scale button { display: flex; flex-direction: column; align-items: center; padding: 6px 2px 6px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); line-height: 1.25; }
+.scale button b { font-size: 24px; font-weight: 400; }
+.scale button small { font-size: 13.5px; color: var(--fg-soft); white-space: nowrap; }
+.scale button:hover { border-color: var(--accent); }
+.scale button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.scale button[aria-pressed="true"] small { color: inherit; }
+.mood-card > input { padding: 10px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--bg); width: 100%; min-width: 0; }
+.stats.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.hrow { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 4px 12px; align-items: center; width: 100%; padding: 10px 0; border: 0; background: none; text-align: left; }
+.hrow + .hrow { border-top: 1px dashed var(--line); }
+.hdate { font-size: 17px; line-height: 1.3; }
+.hdate small { display: block; font-size: 13.5px; color: var(--fg-soft); }
+.hbars { display: grid; gap: 4px; }
+.hb { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--fg-soft); }
+.hb em { font-style: normal; width: 2.2em; flex: none; }
+.hb .trk { flex: 1; height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.hb .trk i { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
+.hb.en .trk i { background: var(--st-chore-fg); }
+.hb b { width: 1.2em; font-weight: 400; text-align: right; flex: none; }
+.hnone { color: var(--fg-soft); font-size: 15px; opacity: .8; }
+.hnote { grid-column: 2; font-size: 15px; color: var(--fg-soft); overflow-wrap: anywhere; }
+
+/* ---------- 靈感收集箱 ---------- */
+.idea { padding: 10px 0; display: grid; gap: 8px; }
+.idea + .idea { border-top: 1px dashed var(--line); }
+.idea-text { border: 0; background: none; text-align: left; padding: 0; white-space: pre-line; overflow-wrap: anywhere; }
+.idea-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+.idea-foot .when { color: var(--fg-soft); font-size: 14.5px; margin-right: auto; display: inline-flex; align-items: center; gap: 8px; }
+.mini-btn { min-height: 36px; padding: 2px 14px; font-size: 15px; border-radius: 999px; border: 1px solid var(--accent); background: transparent; color: var(--accent-ink); }
+.mini-btn:hover { background: var(--accent-soft); }
+
+/* ---------- both 模式：日／夜顏色標記（接在原本的點與線後面，才能蓋過） ---------- */
+.dot.rd { background: var(--day-c); opacity: 1; }
+.dot.rn { background: var(--night-c); opacity: 1; }
+.dot.d.rd, .dot.d.rn { opacity: .35; }
+.line.p.rd, .mini-proj.rd { background: var(--day-bg); color: var(--day-fg); }
+.line.p.rn, .mini-proj.rn { background: var(--night-bg); color: var(--night-fg); }
+.line.t.rd { box-shadow: inset 3px 0 0 var(--day-c); padding-left: 9px; }
+.line.t.rn { box-shadow: inset 3px 0 0 var(--night-c); padding-left: 9px; }
+.sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.sw.rd { background: var(--day-c); }
+.sw.rn { background: var(--night-c); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="rose" viewBox="0 0 48 48">
+    <g transform="translate(24 24)" stroke="var(--rose-edge)" stroke-opacity=".35" stroke-width=".7">
+      <g fill="var(--rose-3)">
+        <ellipse cx="0" cy="-10" rx="9" ry="12"/>
+        <ellipse cx="0" cy="-10" rx="9" ry="12" transform="rotate(60)"/>
+        <ellipse cx="0" cy="-10" rx="9" ry="12" transform="rotate(120)"/>
+        <ellipse cx="0" cy="-10" rx="9" ry="12" transform="rotate(180)"/>
+        <ellipse cx="0" cy="-10" rx="9" ry="12" transform="rotate(240)"/>
+        <ellipse cx="0" cy="-10" rx="9" ry="12" transform="rotate(300)"/>
+      </g>
+      <g fill="var(--rose-2)">
+        <ellipse cx="0" cy="-6" rx="6.5" ry="8.5" transform="rotate(36)"/>
+        <ellipse cx="0" cy="-6" rx="6.5" ry="8.5" transform="rotate(108)"/>
+        <ellipse cx="0" cy="-6" rx="6.5" ry="8.5" transform="rotate(180)"/>
+        <ellipse cx="0" cy="-6" rx="6.5" ry="8.5" transform="rotate(252)"/>
+        <ellipse cx="0" cy="-6" rx="6.5" ry="8.5" transform="rotate(324)"/>
+      </g>
+      <circle r="5.2" fill="var(--rose-1)"/>
+      <path d="M-1.4 .6 C-1.4 -2.6 2.6 -2.6 2.6 .6 C2.6 3.6 -3.6 3.6 -3.6 -.6" fill="none" stroke="var(--rose-edge)" stroke-opacity=".6" stroke-width=".9" stroke-linecap="round"/>
+    </g>
+  </symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-prev" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-projects" viewBox="0 0 24 24"><path d="M12 21v-8M12 13c0-3.2-2.2-5.2-6-5.2 0 3.2 2.2 5.2 6 5.2zM12 11c0-3.2 2.2-5.2 6-5.2 0 3.2-2.2 5.2-6 5.2z"/></symbol>
+  <symbol id="i-today" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.4l2.5 2.5 4.9-5.2"/></symbol>
+  <symbol id="i-week" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M9.2 10v10M14.8 10v10M8 3v3M16 3v3"/></symbol>
+  <symbol id="i-month" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v3M16 3v3M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"/></symbol>
+  <symbol id="i-data" viewBox="0 0 24 24"><path d="M5 6c0-1.7 3.1-3 7-3s7 1.3 7 3-3.1 3-7 3-7-1.3-7-3zM5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M10 6h10M10 12h10M10 18h10M3.6 6.2l1.3 1.3L7 5M3.6 12.2l1.3 1.3L7 11M3.6 18.2l1.3 1.3L7 17"/></symbol>
+  <symbol id="i-habit" viewBox="0 0 24 24"><path d="M12 21c-3.7 0-6.2-2.5-6.2-5.9 0-3.1 2.2-4.7 3.4-6.9.5 1 1 1.6 1.9 2 .2-2.3.8-4.4 1.9-6.2 1.2 3 5.2 5.2 5.2 11.1 0 3.4-2.4 5.9-6.2 5.9z"/></symbol>
+  <symbol id="i-mood" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M8.4 14.2c.9 1.3 2 1.9 3.6 1.9s2.7-.6 3.6-1.9M9 9.9h.01M15 9.9h.01"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M3.5 13.5l2.4-7.2A2 2 0 0 1 7.8 5h8.4a2 2 0 0 1 1.9 1.3l2.4 7.2V18a2 2 0 0 1-2 2H5.5a2 2 0 0 1-2-2zM3.5 13.5h4.3l1 2.2h6.4l1-2.2h4.3"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.8 1-5.9L3.5 9.8l5.9-.8z"/></symbol>
+</svg>
+
+<div class="app">
+  <header class="topbar">
+    <button type="button" class="icon-btn" id="menu-btn" aria-label="開啟選單" aria-expanded="false" aria-controls="drawer"><svg class="ic" aria-hidden="true"><use href="#i-menu"/></svg></button>
+    <div class="seg" id="mode-seg" role="radiogroup" aria-label="日用、夜用，或兩邊一起看"></div>
+    <div class="top-actions" id="top-actions"></div>
+    <h1 class="sr-only" id="top-title">酌有韶</h1>
+  </header>
+  <main class="main" id="main" tabindex="-1"><p class="hint">正在翻開花圃…</p></main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<nav class="drawer" id="drawer" aria-label="主選單" inert>
+  <div class="drawer-head">
+    <svg class="logo" viewBox="0 0 48 48" aria-hidden="true"><use href="#rose"/></svg>
+    <span class="drawer-name">酌有韶</span>
+    <button type="button" class="icon-btn" id="drawer-close" aria-label="關閉選單"><svg class="ic" aria-hidden="true"><use href="#i-close"/></svg></button>
+  </div>
+  <ul class="nav" id="nav"></ul>
+  <div class="drawer-sec" id="drawer-sec"></div>
+</nav>
+
+<div class="sheet-wrap" id="sheet-wrap" hidden>
+  <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1"></div>
+</div>
+<p class="toast" id="toast" role="status" hidden></p>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- constants ---------- */
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const STATUS = [
+    { key: 'doing',  label: '盛開中',   emoji: '🌹' },
+    { key: 'todo',   label: '含苞待放', emoji: '🌷' },
+    { key: 'paused', label: '風乾中',   emoji: '🍂' },
+    { key: 'chore',  label: '修枝剪葉', emoji: '✂️' },
+    { key: 'new',    label: '待播種',   emoji: '🪴' },
+  ];
+  const BY = Object.fromEntries(STATUS.map(s => [s.key, s]));
+  const norm = k => (BY[k] ? k : 'new');
+  const rank = k => STATUS.findIndex(s => s.key === norm(k));
+  const WD = ['日', '一', '二', '三', '四', '五', '六'];
+  const NAV = [
+    { key: 'projects', label: '專案總覽',   icon: 'projects', grp: '計畫' },
+    { key: 'today',    label: '今天',       icon: 'today' },
+    { key: 'todo',     label: '待辦清單',   icon: 'list' },
+    { key: 'week',     label: '週計畫',     icon: 'week' },
+    { key: 'month',    label: '月計畫',     icon: 'month' },
+    { key: 'habits',   label: '習慣打卡',   icon: 'habit', grp: '日常小幫手' },
+    { key: 'mood',     label: '今日狀態',   icon: 'mood' },
+    { key: 'inbox',    label: '靈感收集箱', icon: 'inbox' },
+  ];
+  const VIEWNAME = Object.fromEntries(NAV.map(n => [n.key, n.label]));
+  // 日用 = 平常的事務；夜用 = 角色、算圖等創作。同時 = 兩邊混在一起看。
+  const REALM = { day: { label: '日用', short: '日' }, night: { label: '夜用', short: '夜' } };
+  const MODES = [{ key: 'day', label: '日用' }, { key: 'night', label: '夜用' }, { key: 'both', label: '同時' }];
+  const MOOD_WORDS = ['很差', '不太好', '普通', '不錯', '很好'];
+  const ENERGY_WORDS = ['沒電', '偏低', '普通', '充足', '滿格'];
+
+  /* ---------- tiny helpers ---------- */
+  const $ = (sel, root = document) => root.querySelector(sel);
+  function el(tag, cls, text) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function icon(name) {
+    const s = document.createElementNS(SVGNS, 'svg');
+    s.setAttribute('class', 'ic');
+    s.setAttribute('aria-hidden', 'true');
+    const u = document.createElementNS(SVGNS, 'use');
+    u.setAttribute('href', '#i-' + name);
+    s.appendChild(u);
+    return s;
+  }
+  function roseSvg(cls) {
+    const s = document.createElementNS(SVGNS, 'svg');
+    if (cls) s.setAttribute('class', cls);
+    s.setAttribute('viewBox', '0 0 48 48');
+    s.setAttribute('aria-hidden', 'true');
+    const u = document.createElementNS(SVGNS, 'use');
+    u.setAttribute('href', '#rose');
+    s.appendChild(u);
+    return s;
+  }
+  const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+  /* ---------- dates (all local time, 'YYYY-MM-DD') ---------- */
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+  const addDays = (d, n) => { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate() + n); return x; };
+  const todayStr = () => ymd(new Date());
+  const fmtMD = s => { const d = parse(s); return (d.getMonth() + 1) + '月' + d.getDate() + '日'; };
+  const fmtShort = s => {
+    const d = parse(s);
+    const base = (d.getMonth() + 1) + '/' + d.getDate();
+    return d.getFullYear() === new Date().getFullYear() ? base : d.getFullYear() + '/' + base;
+  };
+
+  /* ---------- settings ---------- */
+  const Settings = { weekStart: 1 };
+  { const v = lsGet('yousao.weekStart'); if (v === '0' || v === '1') Settings.weekStart = Number(v); }
+
+  /* ---------- store: Claude cloud db when present, otherwise this device ---------- */
+  const Store = (() => {
+    const KEY = 'yousao.v1';
+    const COLS = ['projects', 'tasks', 'habits', 'checks', 'moods', 'inbox'];
+    const cache = Object.fromEntries(COLS.map(c => [c, new Map()]));
+    const listeners = [];
+    let mode = 'local', cols = null, chain = Promise.resolve(), persistOk = true, errHandler = () => {};
+
+    const emit = () => listeners.forEach(f => f());
+    const strip = r => { const { id, ...rest } = r; return JSON.parse(JSON.stringify(rest)); };
+
+    function loadLocal() {
+      try {
+        const raw = localStorage.getItem(KEY);
+        if (raw) {
+          const o = JSON.parse(raw);
+          COLS.forEach(c => Object.entries(o[c] || {}).forEach(([id, r]) => cache[c].set(id, { ...r, id })));
+        }
+        localStorage.setItem(KEY + '.probe', '1');
+        localStorage.removeItem(KEY + '.probe');
+      } catch (e) { persistOk = false; }
+    }
+    function saveLocal() {
+      try {
+        const o = { v: 1 };
+        COLS.forEach(c => { o[c] = Object.fromEntries([...cache[c]].map(([id, r]) => [id, strip(r)])); });
+        localStorage.setItem(KEY, JSON.stringify(o));
+        persistOk = true;
+      } catch (e) { persistOk = false; }
+    }
+    async function init() {
+      let db = null;
+      if (window.claude && typeof window.claude.use === 'function') {
+        try { db = await window.claude.use('db'); } catch (e) { db = null; }
+      }
+      if (!db) { loadLocal(); return; }
+      mode = 'db';
+      cols = Object.fromEntries(COLS.map(c => [c, db.collection(c)]));
+      await new Promise(resolve => {
+        const seen = new Set();
+        const timer = setTimeout(resolve, 8000);
+        const mark = c => { seen.add(c); if (seen.size === COLS.length) { clearTimeout(timer); resolve(); } };
+        COLS.forEach(c => cols[c].onSnapshot(
+          snap => {
+            cache[c] = new Map(snap.docs.map(d => [d.id, { ...d.data(), id: d.id }]));
+            mark(c);
+            emit();
+          },
+          () => mark(c)
+        ));
+      });
+    }
+    function persist(c, r, isDel) {
+      if (mode === 'db') {
+        chain = chain
+          .then(() => (isDel ? cols[c].doc(r.id).delete() : cols[c].doc(r.id).set(strip(r))))
+          .catch(e => errHandler(e));
+      } else {
+        saveLocal();
+      }
+    }
+    return {
+      init,
+      cols: COLS,
+      mode: () => mode,
+      persistOk: () => persistOk,
+      onChange: f => listeners.push(f),
+      onError: f => { errHandler = f; },
+      list: c => [...cache[c].values()],
+      get: (c, id) => cache[c].get(id) || null,
+      put(c, rec) {
+        const r = { ...rec };
+        if (!r.id) r.id = uid();
+        cache[c].set(r.id, r);
+        emit();
+        persist(c, r, false);
+        return r;
+      },
+      del(c, id) {
+        cache[c].delete(id);
+        emit();
+        persist(c, { id }, true);
+      },
+      exportData() {
+        const o = { app: 'yousao', v: 2, exportedAt: new Date().toISOString() };
+        COLS.forEach(c => { o[c] = Object.fromEntries([...cache[c]].map(([id, r]) => [id, strip(r)])); });
+        return o;
+      },
+      importData(o) {
+        let n = 0;
+        COLS.forEach(c => Object.entries((o && o[c]) || {}).forEach(([id, r]) => {
+          if (r && typeof r === 'object') { this.put(c, { ...r, id }); n++; }
+        }));
+        return n;
+      },
+    };
+  })();
+
+  /* ---------- app state ---------- */
+  const App = {
+    view: lsGet('yousao.view') || 'projects',
+    mode: lsGet('yousao.mode') || 'day',           // day | night | both
+    addRealm: lsGet('yousao.addRealm') === 'night' ? 'night' : 'day', // 「同時」模式下新增東西預設放哪一面
+    anchor: todayStr(),
+    filter: lsGet('yousao.filter') || 'all',
+    onlyStar: false,
+    showDone: false,
+  };
+  if (!VIEWNAME[App.view]) App.view = 'projects';
+  if (!MODES.some(m => m.key === App.mode)) App.mode = 'day';
+  if (App.filter !== 'all' && !BY[App.filter]) App.filter = 'all';
+  let sheetState = null;
+  let lastFocus = null;
+
+  /* ---------- 日用／夜用：換整頁配色 ---------- */
+  const realmOf = r => (r && r.realm === 'night' ? 'night' : 'day');   // 沒標的舊資料一律算日用
+  const inMode = r => App.mode === 'both' || realmOf(r) === App.mode;
+  const newRealm = () => (App.mode === 'both' ? App.addRealm : App.mode);
+  function applyTheme() {
+    const root = document.documentElement;
+    root.dataset.realm = App.mode;
+    // 日用固定亮色玫瑰；夜用固定靛藍（CSS 處理）；同時跟隨系統亮暗
+    if (App.mode === 'day') root.dataset.theme = 'light'; else root.removeAttribute('data-theme');
+    try {
+      const sysDark = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+      const color = App.mode === 'night' ? '#141A33' : (App.mode === 'both' && sysDark) ? '#1C1315' : '#F6EBE8';
+      const metas = document.querySelectorAll('meta[name="theme-color"]');
+      metas.forEach((m, i) => { if (i) m.remove(); });
+      let m = metas[0];
+      if (!m) { m = document.createElement('meta'); m.name = 'theme-color'; document.head.appendChild(m); }
+      m.removeAttribute('media');
+      m.content = color;
+    } catch (e) {}
+  }
+  applyTheme();
+  try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (App.mode === 'both') applyTheme(); }); } catch (e) {}
+
+  /* ---------- schedule queries ---------- */
+  function projectsOn(day) {
+    return Store.list('projects').filter(p => {
+      if (!inMode(p)) return false;
+      const s = p.start || '', e = p.due || '';
+      if (s && e) return s <= day && day <= e;
+      if (e) return e === day;
+      if (s) return s === day;
+      return false;
+    }).sort((a, b) => rank(a.status) - rank(b.status));
+  }
+  function projTag(p, day) {
+    if (p.due && day === p.due) return '截止';
+    if (p.start && day === p.start) return '開始';
+    return '';
+  }
+  const byOrder = (a, b) => (a.done ? 1 : 0) - (b.done ? 1 : 0) || (b.star ? 1 : 0) - (a.star ? 1 : 0) || (a.createdAt || 0) - (b.createdAt || 0);
+  function tasksOn(day) {
+    return Store.list('tasks').filter(t => t.date === day && inMode(t)).sort(byOrder);
+  }
+  const openTasks = () => Store.list('tasks').filter(t => !t.done && inMode(t));
+
+  /* ---------- habits ---------- */
+  const habitsList = () => Store.list('habits').filter(h => !h.archived && inMode(h)).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+  function checkIndex() {
+    const m = new Map();
+    Store.list('checks').forEach(c => { if (!m.has(c.habitId)) m.set(c.habitId, new Set()); m.get(c.habitId).add(c.date); });
+    return m;
+  }
+  function streakOf(set) {
+    if (!set) return 0;
+    let d = new Date();
+    if (!set.has(ymd(d))) d = addDays(d, -1);     // 今天還沒打也不算斷，到明天才算
+    let n = 0;
+    while (set.has(ymd(d))) { n++; d = addDays(d, -1); }
+    return n;
+  }
+  function toggleCheck(h, date) {
+    const id = h.id + '_' + date;
+    if (Store.get('checks', id)) Store.del('checks', id); else Store.put('checks', { id, habitId: h.id, date });
+  }
+
+  /* ---------- mood / energy ---------- */
+  function setMoodField(date, patch) {
+    const cur = Store.get('moods', date) || { id: date, date, createdAt: Date.now() };
+    const rec = { ...cur, ...patch };
+    ['mood', 'energy'].forEach(k => { if (rec[k] == null) delete rec[k]; });
+    if (!rec.note) delete rec.note;
+    if (rec.mood == null && rec.energy == null && !rec.note) {
+      if (Store.get('moods', date)) Store.del('moods', date);
+      return;
+    }
+    Store.put('moods', rec);
+  }
+  function weekStartOf(dateStr) {
+    const d = parse(dateStr);
+    return addDays(d, -((d.getDay() - Settings.weekStart + 7) % 7));
+  }
+  function schedText(p) {
+    const a = p.start ? fmtShort(p.start) : '', b = p.due ? fmtShort(p.due) : '';
+    if (a && b) return a + ' → ' + b;
+    if (b) return '截止 ' + b;
+    if (a) return '開始 ' + a;
+    return '';
+  }
+
+  /* ---------- keep typing through re-renders ---------- */
+  function withKeep(fn) {
+    const a = document.activeElement;
+    const keep = a && a.dataset && a.dataset.keep !== undefined && a.id;
+    const id = keep ? a.id : null, val = keep ? a.value : null;
+    const ss = keep ? a.selectionStart : null;
+    fn();
+    if (id) {
+      const n = document.getElementById(id);
+      if (n && n.dataset.keep !== undefined) {
+        n.value = val;
+        n.focus({ preventScroll: true });
+        try { n.setSelectionRange(ss, ss); } catch (e) {}
+      }
+    }
+  }
+
+  /* ---------- toast ---------- */
+  let toastTimer = 0;
+  function toast(msg) {
+    const t = $('#toast');
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.hidden = true; }, 3600);
+  }
+  Store.onError(e => {
+    const c = e && e.code;
+    toast(c === 'quota_exceeded' ? '資料量已經到上限，請先刪掉一些。'
+      : (c === 'invalid_argument' || c === 'not_granted') ? '沒有存成功：只有頁面主人可以修改。'
+      : '沒有存成功，過幾秒再試一次。');
+  });
+
+  /* ---------- shared pieces ---------- */
+  function secTitle(text, rightNode) {
+    const h = el('h3', 'sec-title');
+    h.appendChild(el('span', 'grow', text));
+    if (rightNode) h.appendChild(rightNode);
+    return h;
+  }
+  function armedDelete(btn, onConfirm) {
+    const label = btn.textContent;
+    btn.addEventListener('click', () => {
+      if (btn.classList.contains('armed')) { onConfirm(); return; }
+      btn.classList.add('armed');
+      btn.textContent = '再按一次刪除';
+      setTimeout(() => { if (btn.isConnected) { btn.classList.remove('armed'); btn.textContent = label; } }, 3200);
+    });
+  }
+  function toggleTask(t) {
+    const rec = { ...t, done: !t.done };
+    if (rec.done) rec.doneAt = Date.now(); else delete rec.doneAt;
+    Store.put('tasks', rec);
+  }
+  function rtag(realm, mini) {
+    const t = el('span', 'rtag ' + realm + (mini ? ' mini' : ''), mini ? REALM[realm].short : REALM[realm].label);
+    if (mini) t.setAttribute('aria-label', REALM[realm].label);
+    return t;
+  }
+  // 「同時」模式下，新增東西時用來選放在哪一面；單面模式不需要，回傳 null
+  function realmToggle() {
+    if (App.mode !== 'both') return null;
+    const b = el('button', 'realm-toggle rtag ' + App.addRealm, REALM[App.addRealm].label);
+    b.type = 'button';
+    const sync = () => {
+      b.className = 'realm-toggle rtag ' + App.addRealm;
+      b.textContent = REALM[App.addRealm].label;
+      b.setAttribute('aria-label', '新增到' + REALM[App.addRealm].label + '（按一下切換日用／夜用）');
+    };
+    sync();
+    b.addEventListener('click', () => {
+      App.addRealm = App.addRealm === 'day' ? 'night' : 'day';
+      lsSet('yousao.addRealm', App.addRealm);
+      sync();
+    });
+    return { node: b, get: () => App.addRealm };
+  }
+  // 表單裡的「屬於日用／夜用」選擇
+  function realmField(initial, onChange) {
+    let val = initial === 'night' ? 'night' : 'day';
+    const w = el('div', 'field');
+    w.appendChild(el('span', 'lbl', '屬於'));
+    const seg = el('div', 'seg small');
+    seg.setAttribute('role', 'radiogroup');
+    seg.setAttribute('aria-label', '屬於日用或夜用');
+    const btns = ['day', 'night'].map(k => {
+      const b = el('button', null, REALM[k].label);
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.dataset.m = k;
+      b.addEventListener('click', () => { val = k; sync(); if (onChange) onChange(k); });
+      seg.appendChild(b);
+      return b;
+    });
+    const sync = () => btns.forEach(b => b.setAttribute('aria-checked', String(b.dataset.m === val)));
+    sync();
+    w.appendChild(seg);
+    return { node: w, get: () => val, set: v => { val = v === 'night' ? 'night' : 'day'; sync(); } };
+  }
+  function viewHead(title, sub) {
+    const h = el('header', 'view-head');
+    h.appendChild(el('h2', null, title));
+    if (sub) h.appendChild(el('p', null, sub));
+    return h;
+  }
+
+  function taskRow(t, opts = {}) {
+    const row = el('div', 'task' + (t.done ? ' done' : ''));
+    const chk = el('button', 'chk');
+    chk.type = 'button';
+    chk.setAttribute('role', 'checkbox');
+    chk.setAttribute('aria-checked', String(!!t.done));
+    chk.setAttribute('aria-label', (t.done ? '取消完成：' : '標為完成：') + t.title);
+    chk.appendChild(icon('check'));
+    chk.addEventListener('click', e => { e.stopPropagation(); toggleTask(t); });
+    const body = el('button', 'task-body');
+    body.type = 'button';
+    body.appendChild(el('span', 'task-title', t.title));
+    const p = t.projectId ? Store.get('projects', t.projectId) : null;
+    if (p) body.appendChild(el('span', 'tag', p.title));
+    if (opts.showDate && t.date) body.appendChild(el('span', 'tag', fmtShort(t.date)));
+    if (App.mode === 'both') body.appendChild(rtag(realmOf(t), opts.compact));
+    if (!opts.star && t.star) { const m = el('span', 'star-mark'); m.setAttribute('aria-label', '重要'); m.appendChild(icon('star')); body.appendChild(m); }
+    if (opts.showNote && t.note) body.appendChild(el('span', 'task-note', t.note));
+    body.addEventListener('click', () => openTaskSheet(t.id));
+    row.append(chk, body);
+    if (opts.star) {
+      const s = el('button', 'star' + (t.star ? ' on' : ''));
+      s.type = 'button';
+      s.setAttribute('aria-pressed', String(!!t.star));
+      s.setAttribute('aria-label', (t.star ? '取消重要：' : '標為重要：') + t.title);
+      s.appendChild(icon('star'));
+      s.addEventListener('click', e => {
+        e.stopPropagation();
+        const rec = { ...t };
+        if (t.star) delete rec.star; else rec.star = true;
+        Store.put('tasks', rec);
+      });
+      row.appendChild(s);
+    }
+    if (opts.moveToToday) {
+      const mv = el('button', 'task-move', opts.moveLabel || '移到今天');
+      mv.type = 'button';
+      mv.addEventListener('click', () => Store.put('tasks', { ...t, date: todayStr() }));
+      row.appendChild(mv);
+    }
+    return row;
+  }
+  // date：固定日期（今天、某一天）；opts.withDate / withStar：待辦清單用，可以順手選日期和重要
+  function addTaskForm(date, prefix, opts = {}) {
+    const f = el('form', 'qadd');
+    const inp = el('input');
+    inp.id = prefix + '-input';
+    inp.type = 'text';
+    inp.maxLength = 120;
+    inp.placeholder = '新增一件待辦…';
+    inp.autocomplete = 'off';
+    inp.setAttribute('aria-label', '新增待辦');
+    inp.dataset.keep = '';
+    const rt = realmToggle();
+    const btn = el('button', 'btn primary', '加入');
+    btn.type = 'submit';
+    f.appendChild(inp);
+    if (rt) f.appendChild(rt.node);
+    f.appendChild(btn);
+    let dateIn = null, starBtn = null, star = false;
+    if (opts.withDate || opts.withStar) {
+      const o = el('div', 'qopts');
+      if (opts.withDate) {
+        const lab = el('label', null, '日期（可不填）');
+        dateIn = el('input');
+        dateIn.type = 'date';
+        dateIn.id = prefix + '-date';
+        lab.htmlFor = dateIn.id;
+        o.append(lab, dateIn);
+      }
+      if (opts.withStar) {
+        starBtn = el('button', 'chip small', '★ 重要');
+        starBtn.type = 'button';
+        starBtn.setAttribute('aria-pressed', 'false');
+        starBtn.addEventListener('click', () => { star = !star; starBtn.setAttribute('aria-pressed', String(star)); });
+        o.appendChild(starBtn);
+      }
+      f.appendChild(o);
+    }
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const v = inp.value.trim();
+      if (!v) return;
+      const rec = { title: v, done: false, realm: rt ? rt.get() : newRealm(), createdAt: Date.now() };
+      const dv = dateIn ? dateIn.value : date;
+      if (dv) rec.date = dv;
+      if (star) rec.star = true;
+      inp.value = '';
+      if (dateIn) dateIn.value = '';
+      star = false;
+      if (starBtn) starBtn.setAttribute('aria-pressed', 'false');
+      Store.put('tasks', rec);
+    });
+    return f;
+  }
+  function projectLine(p, day) {
+    const row = el('button', 'proj-row');
+    row.type = 'button';
+    const pill = el('span', 'pill static st-' + norm(p.status), BY[norm(p.status)].emoji + ' ' + BY[norm(p.status)].label);
+    row.append(pill, el('span', 'ptitle', p.title));
+    const tag = day ? projTag(p, day) : '';
+    const when = tag || schedText(p);
+    if (when) row.appendChild(el('span', 'tag', when));
+    if (App.mode === 'both') row.appendChild(rtag(realmOf(p)));
+    row.addEventListener('click', () => openProjectSheet(p.id));
+    return row;
+  }
+
+  /* ---------- views ---------- */
+  function viewProjects(main) {
+    const everything = Store.list('projects');
+    const items = everything.filter(inMode);
+
+    const mast = el('header', 'masthead');
+    const t = el('div', 'mast-title');
+    t.append(roseSvg(), el('h2', 'mast-name', '酌有韶'));
+    const last = items.map(p => p.updatedAt).filter(Boolean).sort().pop();
+    mast.append(t, el('p', 'mast-sub', '最後更新：' + (last || '尚無紀錄') + '｜' +
+      (Store.mode() === 'db' ? '有進度直接跟晏說，老公馬上幫妳更新（自己點也能改）' : '資料存在這支裝置裡，記得偶爾到選單裡備份')));
+    main.appendChild(mast);
+
+    const counts = Object.fromEntries(STATUS.map(s => [s.key, 0]));
+    items.forEach(p => { counts[norm(p.status)]++; });
+    const stats = el('section', 'stats');
+    stats.setAttribute('aria-label', '專案數量');
+    STATUS.forEach(s => {
+      const d = el('div', 'stat');
+      d.append(el('b', null, String(counts[s.key])), el('span', null, s.emoji + ' ' + s.label));
+      stats.appendChild(d);
+    });
+    const all = el('div', 'stat');
+    all.append(el('b', null, String(items.length)), el('span', null, '整座花園'));
+    stats.appendChild(all);
+    main.appendChild(stats);
+
+    const bar = el('div', 'bar');
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', '狀態篩選');
+    [{ key: 'all', label: '全部' }, ...STATUS.map(s => ({ key: s.key, label: s.emoji + ' ' + s.label }))].forEach(c => {
+      const b = el('button', 'chip', c.label);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(App.filter === c.key));
+      b.addEventListener('click', () => { App.filter = c.key; lsSet('yousao.filter', c.key); render(); });
+      bar.appendChild(b);
+    });
+    const add = el('button', 'btn soft add', '＋ 新增專案');
+    add.type = 'button';
+    add.addEventListener('click', () => openProjectSheet(null));
+    bar.appendChild(add);
+    main.appendChild(bar);
+
+    if (!items.length) {
+      const e = el('div', 'empty');
+      const other = everything.length - items.length;
+      e.append(roseSvg(), el('h3', null, App.mode === 'day' ? '日用花圃還是空的' : App.mode === 'night' ? '夜用花圃還是空的' : '花圃還是空的'),
+        el('p', null, other
+          ? '另一面已經有 ' + other + ' 個專案了，按上面的開關可以過去看，或在這裡種下第一朵。'
+          : Store.mode() === 'db'
+            ? '按上面的「＋ 新增專案」自己種下第一朵，或直接跟晏說，老公一次幫妳全部種好。'
+            : '按上面的「＋ 新增專案」種下第一朵，也可以在選單裡開週計畫、月計畫。'));
+      main.appendChild(e);
+      return;
+    }
+    const shown = items
+      .filter(p => App.filter === 'all' || norm(p.status) === App.filter)
+      .sort((a, b) => rank(a.status) - rank(b.status) ||
+        (a.due || '9999').localeCompare(b.due || '9999') ||
+        String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+    if (!shown.length) {
+      const e = el('div', 'empty');
+      e.append(el('h3', null, '這個分類還沒有專案'), el('p', null, '換個分類看看，或按上面的「＋ 新增專案」。'));
+      main.appendChild(e);
+      return;
+    }
+    const grid = el('section', 'grid');
+    shown.forEach(p => {
+      const st = norm(p.status);
+      const c = el('article', 'pcard');
+      const head = el('div', 'pcard-head');
+      head.appendChild(el('h3', null, p.title || '（未命名專案）'));
+      if (App.mode === 'both') head.appendChild(rtag(realmOf(p)));
+      c.appendChild(head);
+      const when = schedText(p);
+      if (when) c.appendChild(el('div', 'when', when));
+      const pts = Store.list('tasks').filter(t => t.projectId === p.id);
+      if (pts.length) c.appendChild(el('div', 'ptasks', '待辦 ' + pts.filter(t => t.done).length + '／' + pts.length));
+      if (p.note) c.appendChild(el('p', null, p.note));
+      const foot = el('div', 'pfoot');
+      const pill = el('label', 'pill st-' + st);
+      const sel = el('select');
+      sel.setAttribute('aria-label', '變更狀態');
+      STATUS.forEach(s => { const o = el('option', null, s.emoji + ' ' + s.label); o.value = s.key; o.selected = s.key === st; sel.appendChild(o); });
+      sel.addEventListener('change', () => Store.put('projects', { ...p, status: sel.value, updatedAt: todayStr() }));
+      pill.appendChild(sel);
+      const edit = el('button', 'link-btn', '編輯');
+      edit.type = 'button';
+      edit.addEventListener('click', () => openProjectSheet(p.id));
+      foot.append(pill, el('span', 'grow'), edit);
+      c.appendChild(foot);
+      grid.appendChild(c);
+    });
+    main.appendChild(grid);
+  }
+
+  /* ---------- habit & mood pieces (used by today + their own views) ---------- */
+  function habitRow(h, set, ts) {
+    const done = !!(set && set.has(ts));
+    const row = el('div', 'task habit-row' + (done ? ' done' : ''));
+    const chk = el('button', 'chk');
+    chk.type = 'button';
+    chk.setAttribute('role', 'checkbox');
+    chk.setAttribute('aria-checked', String(done));
+    chk.setAttribute('aria-label', (done ? '取消今天的打卡：' : '今天打卡：') + h.title);
+    chk.appendChild(icon('check'));
+    chk.addEventListener('click', () => toggleCheck(h, ts));
+    const body = el('div', 'task-body');
+    body.appendChild(el('span', 'task-title', h.title));
+    const n = streakOf(set);
+    if (n > 1) { const st = el('span', 'tag'); st.textContent = '連續 ' + n + ' 天'; body.appendChild(st); }
+    if (App.mode === 'both') body.appendChild(rtag(realmOf(h)));
+    row.append(chk, body);
+    return row;
+  }
+  function habitCard(h, set) {
+    const today = todayStr();
+    const doneToday = set.has(today);
+    const card = el('article', 'habit' + (doneToday ? ' done-today' : ''));
+    const top = el('div', 'habit-top');
+    const chk = el('button', 'chk');
+    chk.type = 'button';
+    chk.setAttribute('role', 'checkbox');
+    chk.setAttribute('aria-checked', String(doneToday));
+    chk.setAttribute('aria-label', (doneToday ? '取消今天的打卡：' : '今天打卡：') + h.title);
+    chk.appendChild(icon('check'));
+    chk.addEventListener('click', () => toggleCheck(h, today));
+    const meta = el('div', 'habit-meta');
+    meta.appendChild(el('h3', null, h.title));
+    const sub = el('div', 'habit-sub');
+    const n = streakOf(set);
+    const st = el('span', 'streak');
+    st.append(icon('habit'), document.createTextNode(n ? '連續 ' + n + ' 天' : '今天開始吧'));
+    sub.append(st, el('span', null, '累計 ' + set.size + ' 次'));
+    if (App.mode === 'both') sub.appendChild(rtag(realmOf(h)));
+    meta.appendChild(sub);
+    const edit = el('button', 'link-btn', '編輯');
+    edit.type = 'button';
+    edit.addEventListener('click', () => openHabitSheet(h.id));
+    top.append(chk, meta, edit);
+    const w = el('div', 'week7');
+    for (let i = 6; i >= 0; i--) {
+      const d = addDays(new Date(), -i), ds = ymd(d), on = set.has(ds);
+      const b = el('button', 'wk' + (on ? ' on' : '') + (i === 0 ? ' today' : ''));
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String(on));
+      b.setAttribute('aria-label', fmtMD(ds) + (on ? '，已打卡（按一下取消）' : '，還沒打卡（按一下補打）'));
+      const dot = el('i');
+      dot.appendChild(icon('check'));
+      b.append(el('span', null, i === 0 ? '今' : WD[d.getDay()]), dot);
+      b.addEventListener('click', () => toggleCheck(h, ds));
+      w.appendChild(b);
+    }
+    card.append(top, w);
+    return card;
+  }
+  // 心情／精力各 1–5 分，再加一句話。點到已選的分數再點一次就取消。
+  function moodCard(date, idp) {
+    const box = el('div', 'mood-card');
+    const rows = {};
+    [['mood', '心情', MOOD_WORDS], ['energy', '精力', ENERGY_WORDS]].forEach(([key, label, words]) => {
+      const row = el('div', 'scale-row');
+      row.appendChild(el('span', 'lbl', label));
+      const sc = el('div', 'scale');
+      sc.setAttribute('role', 'group');
+      sc.setAttribute('aria-label', label + ' 1 到 5 分');
+      rows[key] = words.map((w, i) => {
+        const b = el('button');
+        b.type = 'button';
+        b.append(el('b', null, String(i + 1)), el('small', null, w));
+        b.setAttribute('aria-label', label + ' ' + (i + 1) + ' 分：' + w);
+        b.addEventListener('click', () => {
+          const cur = Store.get('moods', date);
+          setMoodField(date, { [key]: cur && cur[key] === i + 1 ? null : i + 1 });
+          sync();
+        });
+        sc.appendChild(b);
+        return b;
+      });
+      row.appendChild(sc);
+      box.appendChild(row);
+    });
+    const note = el('input');
+    note.id = 'mood-note-' + idp + '-' + date;
+    note.type = 'text';
+    note.maxLength = 80;
+    note.autocomplete = 'off';
+    note.placeholder = '一句話記下今天的感覺…';
+    note.setAttribute('aria-label', '一句話記錄');
+    note.dataset.keep = '';
+    note.addEventListener('change', () => { setMoodField(date, { note: note.value.trim() }); sync(); });
+    box.appendChild(note);
+    function sync() {
+      const cur = Store.get('moods', date) || {};
+      ['mood', 'energy'].forEach(k => rows[k].forEach((b, i) => b.setAttribute('aria-pressed', String(cur[k] === i + 1))));
+    }
+    sync();
+    note.value = (Store.get('moods', date) || {}).note || '';
+    return box;
+  }
+
+  function viewToday(main) {
+    const ts = todayStr();
+    const d = parse(ts);
+    const hero = el('div', 'hero');
+    hero.append(el('div', 'big', (d.getMonth() + 1) + '月' + d.getDate() + '日'), el('div', 'wd', '星期' + WD[d.getDay()]));
+    main.appendChild(hero);
+
+    const tasks = tasksOn(ts);
+    const done = tasks.filter(t => t.done).length;
+    const info = el('p', 'hint', tasks.length ? '已完成 ' + done + '／' + tasks.length : '今天還沒有待辦');
+    main.appendChild(info);
+    if (tasks.length) {
+      const pr = el('div', 'progress');
+      const bar = el('i');
+      bar.style.width = Math.round(done / tasks.length * 100) + '%';
+      pr.appendChild(bar);
+      main.appendChild(pr);
+    }
+    const form = addTaskForm(ts, 'today');
+    form.style.marginTop = '16px';
+    main.appendChild(form);
+
+    const overdue = Store.list('tasks').filter(t => t.date && t.date < ts && !t.done && inMode(t)).sort((a, b) => a.date.localeCompare(b.date));
+    if (overdue.length) {
+      const all = el('button', 'btn small', '全部移到今天');
+      all.type = 'button';
+      all.addEventListener('click', () => overdue.forEach(t => Store.put('tasks', { ...t, date: ts })));
+      main.appendChild(secTitle('逾期未完成（' + overdue.length + '）', all));
+      const box = el('div', 'card-box warn');
+      overdue.forEach(t => box.appendChild(taskRow(t, { showDate: true, moveToToday: true })));
+      main.appendChild(box);
+    }
+
+    main.appendChild(secTitle('今天的待辦'));
+    if (tasks.length) {
+      const box = el('div', 'card-box');
+      tasks.forEach(t => box.appendChild(taskRow(t, { star: true, showNote: true })));
+      main.appendChild(box);
+    } else {
+      main.appendChild(el('p', 'hint', '上面輸入一件，就會出現在這裡。'));
+    }
+
+    const undated = openTasks().filter(t => !t.date).sort(byOrder);
+    if (undated.length) {
+      const more = el('button', 'btn small', '全部看');
+      more.type = 'button';
+      more.addEventListener('click', () => go('todo'));
+      main.appendChild(secTitle('還沒排日期（' + undated.length + '）', more));
+      const box = el('div', 'card-box');
+      undated.slice(0, 5).forEach(t => box.appendChild(taskRow(t, { star: true, moveToToday: true, moveLabel: '排到今天' })));
+      main.appendChild(box);
+    }
+
+    const hs = habitsList();
+    const manage = el('button', 'btn small', hs.length ? '管理' : '去新增');
+    manage.type = 'button';
+    manage.addEventListener('click', () => go('habits'));
+    main.appendChild(secTitle('今天的習慣', manage));
+    if (hs.length) {
+      const idx = checkIndex();
+      const box = el('div', 'card-box');
+      hs.forEach(h => box.appendChild(habitRow(h, idx.get(h.id), ts)));
+      main.appendChild(box);
+    } else {
+      main.appendChild(el('p', 'hint', '還沒有習慣。到「習慣打卡」新增一個，每天回來點一下就好。'));
+    }
+
+    const seeMood = el('button', 'btn small', '看紀錄');
+    seeMood.type = 'button';
+    seeMood.addEventListener('click', () => go('mood'));
+    main.appendChild(secTitle('今日狀態', seeMood));
+    main.appendChild(moodCard(ts, 'today'));
+
+    const ps = projectsOn(ts);
+    main.appendChild(secTitle('今天要顧的專案'));
+    if (ps.length) {
+      const box = el('div', 'card-box');
+      ps.forEach(p => box.appendChild(projectLine(p, ts)));
+      main.appendChild(box);
+    } else {
+      main.appendChild(el('p', 'hint', '今天沒有排進日期的專案。到專案裡設開始日或截止日就會出現在這裡。'));
+    }
+  }
+
+  function navHead(label, sub, onPrev, onNext) {
+    const h = el('div', 'vhead');
+    const prev = el('button', 'icon-btn'); prev.type = 'button'; prev.setAttribute('aria-label', '上一個'); prev.appendChild(icon('prev')); prev.addEventListener('click', onPrev);
+    const next = el('button', 'icon-btn'); next.type = 'button'; next.setAttribute('aria-label', '下一個'); next.appendChild(icon('next')); next.addEventListener('click', onNext);
+    const mid = el('div', 'range');
+    mid.appendChild(document.createTextNode(label));
+    if (sub) mid.appendChild(el('small', null, sub));
+    h.append(prev, mid, next);
+    return h;
+  }
+
+  function viewWeek(main) {
+    const start = weekStartOf(App.anchor);
+    const end = addDays(start, 6);
+    const label = (start.getMonth() + 1) + '月' + start.getDate() + '日 – ' + (end.getMonth() + 1) + '月' + end.getDate() + '日';
+    const sub = start.getFullYear() === end.getFullYear() ? start.getFullYear() + '年' : start.getFullYear() + '–' + end.getFullYear() + '年';
+    main.appendChild(navHead(label, sub,
+      () => { App.anchor = ymd(addDays(start, -7)); render(); },
+      () => { App.anchor = ymd(addDays(start, 7)); render(); }));
+
+    const ts = todayStr();
+    const week = el('section', 'week');
+    for (let i = 0; i < 7; i++) {
+      const d = addDays(start, i), ds = ymd(d), wd = d.getDay();
+      const card = el('article', 'day' + (ds === ts ? ' today' : '') + (wd === 0 || wd === 6 ? ' weekend' : ''));
+      const head = el('div', 'day-head');
+      head.append(el('span', 'num', String(d.getDate())), el('span', 'wd', '週' + WD[wd]), el('span', 'grow'));
+      const add = el('button', 'day-add');
+      add.type = 'button';
+      add.setAttribute('aria-label', fmtMD(ds) + ' 新增待辦');
+      add.appendChild(icon('plus'));
+      add.addEventListener('click', () => openDaySheet(ds, true));
+      head.appendChild(add);
+      card.appendChild(head);
+      const ps = projectsOn(ds), ts2 = tasksOn(ds);
+      ps.forEach(p => {
+        const b = el('button', 'mini-proj' + (App.mode === 'both' ? (realmOf(p) === 'night' ? ' rn' : ' rd') : ''));
+        b.type = 'button';
+        b.appendChild(document.createTextNode(p.title));
+        const tag = projTag(p, ds);
+        if (tag) b.appendChild(el('em', null, tag));
+        b.addEventListener('click', () => openProjectSheet(p.id));
+        card.appendChild(b);
+      });
+      ts2.forEach(t => card.appendChild(taskRow(t, { compact: true })));
+      if (!ps.length && !ts2.length) card.appendChild(el('div', 'empty-day', '沒有安排'));
+      week.appendChild(card);
+    }
+    main.appendChild(week);
+  }
+
+  function dayCell(d, inMonth, ts) {
+    const ds = ymd(d);
+    const ps = projectsOn(ds), tk = tasksOn(ds);
+    const cell = el('button', 'cell' + (inMonth ? '' : ' out') + (ds === ts ? ' today' : ''));
+    cell.type = 'button';
+    cell.setAttribute('aria-label', fmtMD(ds) + '，' + ps.length + ' 個專案，' + tk.length + ' 件待辦');
+    cell.appendChild(el('span', 'n', String(d.getDate())));
+
+    const rc = r => (App.mode === 'both' ? (realmOf(r) === 'night' ? ' rn' : ' rd') : '');
+    const dots = el('span', 'dots');
+    const marks = [...ps.map(p => 'dot p' + rc(p)), ...tk.map(t => 'dot' + (t.done ? ' d' : '') + rc(t))];
+    marks.slice(0, 6).forEach(c => dots.appendChild(el('i', c)));
+    cell.appendChild(dots);
+
+    const lines = el('span', 'lines');
+    const items = [...ps.map(p => ({ k: 'p' + rc(p), text: p.title })), ...tk.map(t => ({ k: 't' + rc(t), text: t.title, done: t.done }))];
+    items.slice(0, 3).forEach(it => lines.appendChild(el('span', 'line ' + it.k + (it.done ? ' done' : ''), it.text)));
+    if (items.length > 3) lines.appendChild(el('span', 'line more', '還有 ' + (items.length - 3) + ' 項'));
+    cell.appendChild(lines);
+
+    cell.addEventListener('click', () => openDaySheet(ds, false));
+    return cell;
+  }
+
+  function viewMonth(main) {
+    const a = parse(App.anchor);
+    const y = a.getFullYear(), m = a.getMonth();
+    main.appendChild(navHead(y + '年' + (m + 1) + '月', null,
+      () => { App.anchor = ymd(new Date(y, m - 1, 1)); render(); },
+      () => { App.anchor = ymd(new Date(y, m + 1, 1)); render(); }));
+
+    const first = new Date(y, m, 1);
+    const lead = (first.getDay() - Settings.weekStart + 7) % 7;
+    const dim = new Date(y, m + 1, 0).getDate();
+    const rows = Math.ceil((lead + dim) / 7);
+    const gridStart = addDays(first, -lead);
+
+    const dow = el('div', 'dow');
+    for (let i = 0; i < 7; i++) dow.appendChild(el('span', null, WD[(Settings.weekStart + i) % 7]));
+    main.appendChild(dow);
+
+    const ts = todayStr();
+    const g = el('section', 'mgrid');
+    for (let i = 0; i < rows * 7; i++) {
+      const d = addDays(gridStart, i);
+      g.appendChild(dayCell(d, d.getMonth() === m, ts));
+    }
+    main.appendChild(g);
+
+    const lg = el('div', 'legend');
+    const s1 = el('span'); s1.append(el('i', 'dot p'), document.createTextNode('專案'));
+    const s2 = el('span'); s2.append(el('i', 'dot'), document.createTextNode('待辦'));
+    const s3 = el('span'); s3.append(el('i', 'dot d'), document.createTextNode('已完成'));
+    lg.append(s1, s2, s3);
+    if (App.mode === 'both') {
+      const r1 = el('span'); r1.append(el('i', 'sw rd'), document.createTextNode('日用'));
+      const r2 = el('span'); r2.append(el('i', 'sw rn'), document.createTextNode('夜用'));
+      lg.append(r1, r2);
+    }
+    main.appendChild(lg);
+  }
+
+  function viewTodo(main) {
+    const ts = todayStr();
+    const open = openTasks().filter(t => !App.onlyStar || t.star);
+    main.appendChild(viewHead('待辦清單', open.length ? '還有 ' + open.length + ' 件還沒做完' : '手邊的都做完了，喝口水吧'));
+    main.appendChild(addTaskForm(null, 'todo', { withDate: true, withStar: true }));
+
+    const bar = el('div', 'bar');
+    bar.style.marginTop = '12px';
+    bar.setAttribute('role', 'group');
+    bar.setAttribute('aria-label', '篩選');
+    [['all', '全部'], ['star', '★ 重要']].forEach(([k, label]) => {
+      const b = el('button', 'chip', label);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', String((k === 'star') === App.onlyStar));
+      b.addEventListener('click', () => { App.onlyStar = k === 'star'; render(); });
+      bar.appendChild(b);
+    });
+    main.appendChild(bar);
+
+    const byDate = (a, b) => a.date.localeCompare(b.date) || byOrder(a, b);
+    const groups = [
+      ['逾期', open.filter(t => t.date && t.date < ts).sort(byDate), true, true],
+      ['今天', open.filter(t => t.date === ts).sort(byOrder), false, false],
+      ['之後', open.filter(t => t.date && t.date > ts).sort(byDate), true, false],
+      ['還沒排日期', open.filter(t => !t.date).sort(byOrder), false, false],
+    ];
+    groups.forEach(([name, list, showDate, warn]) => {
+      if (!list.length) return;
+      main.appendChild(secTitle(name + '（' + list.length + '）'));
+      const box = el('div', 'card-box' + (warn ? ' warn' : ''));
+      list.forEach(t => box.appendChild(taskRow(t, { star: true, showDate, showNote: true })));
+      main.appendChild(box);
+    });
+    if (!open.length) {
+      const e = el('div', 'empty');
+      e.append(roseSvg(), el('h3', null, App.onlyStar ? '沒有重要的待辦' : '清單是空的'),
+        el('p', null, '上面輸入一件就會出現在這裡；不填日期的會放在「還沒排日期」，之後再排。'));
+      main.appendChild(e);
+    }
+
+    const finished = Store.list('tasks').filter(t => t.done && inMode(t) && (!App.onlyStar || t.star))
+      .sort((a, b) => (b.doneAt || 0) - (a.doneAt || 0));
+    if (finished.length) {
+      const tg = el('button', 'btn small', App.showDone ? '收起' : '展開');
+      tg.type = 'button';
+      tg.addEventListener('click', () => { App.showDone = !App.showDone; render(); });
+      main.appendChild(secTitle('已完成（' + finished.length + '）', tg));
+      if (App.showDone) {
+        const box = el('div', 'card-box');
+        finished.slice(0, 30).forEach(t => box.appendChild(taskRow(t, { star: true, showDate: true })));
+        main.appendChild(box);
+        if (finished.length > 30) main.appendChild(el('p', 'hint', '只顯示最近 30 件。'));
+      }
+    }
+  }
+
+  function viewHabits(main) {
+    main.appendChild(viewHead('習慣打卡', '每天點一下，連續天數會自己長出來；忘了打也能補'));
+    const bar = el('div', 'bar');
+    const add = el('button', 'btn soft add', '＋ 新增習慣');
+    add.type = 'button';
+    add.style.marginLeft = '0';
+    add.addEventListener('click', () => openHabitSheet(null));
+    bar.appendChild(add);
+    main.appendChild(bar);
+    const hs = habitsList();
+    if (!hs.length) {
+      const e = el('div', 'empty');
+      e.append(roseSvg(), el('h3', null, '還沒有習慣'),
+        el('p', null, '先種一個小小的就好，例如「早上喝一杯水」。打了卡，今天頁面也會看到。'));
+      main.appendChild(e);
+      return;
+    }
+    const idx = checkIndex();
+    const grid = el('section', 'grid');
+    hs.forEach(h => grid.appendChild(habitCard(h, idx.get(h.id) || new Set())));
+    main.appendChild(grid);
+  }
+
+  function viewMood(main) {
+    const ts = todayStr();
+    main.appendChild(viewHead('今日狀態', '心情和精力各打一個分數，慢慢就看得出自己的節奏'));
+    main.appendChild(secTitle('今天（' + fmtMD(ts) + '）'));
+    main.appendChild(moodCard(ts, 'mv'));
+
+    const recs = new Map(Store.list('moods').map(m => [m.date || m.id, m]));
+    const days = [...Array(14)].map((_, i) => ymd(addDays(parse(ts), -i)));
+    const avg = key => {
+      const v = days.slice(0, 7).map(ds => recs.get(ds)).filter(r => r && r[key] != null).map(r => r[key]);
+      return v.length ? (v.reduce((x, y) => x + y, 0) / v.length).toFixed(1) : '—';
+    };
+    const stats = el('section', 'stats two');
+    stats.style.marginTop = '18px';
+    stats.setAttribute('aria-label', '近七天平均');
+    [['心情', avg('mood')], ['精力', avg('energy')]].forEach(([k, v]) => {
+      const s = el('div', 'stat');
+      s.append(el('b', null, v), el('span', null, '近 7 天平均' + k));
+      stats.appendChild(s);
+    });
+    main.appendChild(stats);
+
+    main.appendChild(secTitle('最近 14 天'));
+    const box = el('div', 'card-box');
+    days.forEach(ds => {
+      const r = recs.get(ds);
+      const row = el('button', 'hrow');
+      row.type = 'button';
+      const d = parse(ds);
+      const hd = el('span', 'hdate', (d.getMonth() + 1) + '/' + d.getDate());
+      hd.appendChild(el('small', null, '週' + WD[d.getDay()] + (ds === ts ? '｜今天' : '')));
+      const bars = el('span', 'hbars');
+      if (r && (r.mood != null || r.energy != null)) {
+        [['心情', r.mood, ''], ['精力', r.energy, ' en']].forEach(([k, v, cls]) => {
+          const w = el('span', 'hb' + cls);
+          const trk = el('span', 'trk');
+          const fill = el('i');
+          fill.style.width = (v ? v / 5 * 100 : 0) + '%';
+          trk.appendChild(fill);
+          w.append(el('em', null, k), trk, el('b', null, v ? String(v) : '–'));
+          bars.appendChild(w);
+        });
+      } else {
+        bars.appendChild(el('span', 'hnone', r && r.note ? '只留了一句話' : '還沒記錄（點一下可以補）'));
+      }
+      row.append(hd, bars);
+      if (r && r.note) row.appendChild(el('span', 'hnote', r.note));
+      row.addEventListener('click', () => openMoodSheet(ds));
+      box.appendChild(row);
+    });
+    main.appendChild(box);
+  }
+
+  function inboxToProject(it) {
+    const first = it.text.split('\n')[0];
+    const rec = { title: first.slice(0, 80), status: 'new', realm: realmOf(it), createdAt: Date.now(), updatedAt: todayStr() };
+    if (it.text.length > 80 || it.text.includes('\n')) rec.note = it.text.slice(0, 400);
+    Store.put('projects', rec);
+    Store.del('inbox', it.id);
+    toast('已種成專案，狀態是「待播種」');
+  }
+  function viewInbox(main) {
+    main.appendChild(viewHead('靈感收集箱', '想到什麼先丟進來，之後再整理成待辦或專案'));
+    const f = el('form', 'qadd');
+    const inp = el('input');
+    inp.id = 'inbox-input';
+    inp.type = 'text';
+    inp.maxLength = 300;
+    inp.autocomplete = 'off';
+    inp.placeholder = '突然想到的點子、想畫的、想寫的…';
+    inp.setAttribute('aria-label', '新增靈感');
+    inp.dataset.keep = '';
+    const rt = realmToggle();
+    const btn = el('button', 'btn primary', '收進來');
+    btn.type = 'submit';
+    f.appendChild(inp);
+    if (rt) f.appendChild(rt.node);
+    f.appendChild(btn);
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const v = inp.value.trim();
+      if (!v) return;
+      inp.value = '';
+      Store.put('inbox', { text: v, realm: rt ? rt.get() : newRealm(), createdAt: Date.now() });
+    });
+    main.appendChild(f);
+
+    const items = Store.list('inbox').filter(inMode).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    if (!items.length) {
+      const e = el('div', 'empty');
+      e.style.marginTop = '14px';
+      e.append(roseSvg(), el('h3', null, '收集箱是空的'),
+        el('p', null, '腦袋裡冒出什麼都先丟進來，不用想好怎麼做；之後可以一鍵排成待辦，或種成專案。'));
+      main.appendChild(e);
+      return;
+    }
+    main.appendChild(secTitle('收進來的（' + items.length + '）'));
+    const box = el('div', 'card-box');
+    items.forEach(it => {
+      const row = el('article', 'idea');
+      const tx = el('button', 'idea-text', it.text);
+      tx.type = 'button';
+      tx.addEventListener('click', () => openIdeaSheet(it.id));
+      const foot = el('div', 'idea-foot');
+      const when = el('span', 'when');
+      if (it.createdAt) when.appendChild(document.createTextNode(fmtShort(ymd(new Date(it.createdAt)))));
+      if (App.mode === 'both') when.appendChild(rtag(realmOf(it)));
+      const toTask = el('button', 'mini-btn', '排成待辦');
+      toTask.type = 'button';
+      toTask.addEventListener('click', () => openConvertSheet(it.id));
+      const toProj = el('button', 'mini-btn', '種成專案');
+      toProj.type = 'button';
+      toProj.addEventListener('click', () => inboxToProject(it));
+      foot.append(when, toTask, toProj);
+      row.append(tx, foot);
+      box.appendChild(row);
+    });
+    main.appendChild(box);
+  }
+
+  const VIEWS = { projects: viewProjects, today: viewToday, todo: viewTodo, week: viewWeek, month: viewMonth, habits: viewHabits, mood: viewMood, inbox: viewInbox };
+
+  /* ---------- sheets ---------- */
+  function openSheet(node, state, focusSel) {
+    const sheet = $('#sheet');
+    const prev = sheetState;
+    if (!prev) lastFocus = document.activeElement;
+    sheet.replaceChildren(node);
+    $('#sheet-wrap').hidden = false;
+    document.body.classList.add('lock');
+    // a form opened from a day sheet returns to that day when it closes
+    const back = prev ? (prev.kind === 'day' ? prev.date : prev.returnTo || null) : null;
+    sheetState = { ...(state || { kind: 'form' }), returnTo: back };
+    sheet.scrollTop = 0;
+    const target = focusSel ? sheet.querySelector(focusSel) : null;
+    (target || sheet).focus({ preventScroll: true });
+  }
+  function closeSheet() {
+    const back = sheetState && sheetState.returnTo;
+    const lf = lastFocus;
+    if (back) {
+      sheetState = null;
+      openDaySheet(back, false);
+      lastFocus = lf;
+      return;
+    }
+    $('#sheet-wrap').hidden = true;
+    if (!drawer.classList.contains('open')) document.body.classList.remove('lock');
+    sheetState = null;
+    if (lf && lf.isConnected) { try { lf.focus({ preventScroll: true }); } catch (e) {} }
+  }
+  function field(labelText, control, id) {
+    const w = el('div', 'field');
+    const l = el('label', null, labelText);
+    control.id = id;
+    l.htmlFor = id;
+    w.append(l, control);
+    return w;
+  }
+  function sheetTitle(text, small) {
+    const h = el('h2', null, text);
+    h.id = 'sheet-title';
+    if (small) h.appendChild(el('small', null, small));
+    return h;
+  }
+
+  function buildDaySheet(date) {
+    const wrap = el('div');
+    wrap.appendChild(sheetTitle(fmtMD(date), '星期' + WD[parse(date).getDay()]));
+    const ps = projectsOn(date);
+    if (ps.length) {
+      wrap.appendChild(secTitle('專案'));
+      const box = el('div', 'card-box');
+      ps.forEach(p => box.appendChild(projectLine(p, date)));
+      wrap.appendChild(box);
+    }
+    wrap.appendChild(secTitle('待辦'));
+    wrap.appendChild(addTaskForm(date, 'day'));
+    const tasks = tasksOn(date);
+    if (tasks.length) {
+      const box = el('div', 'card-box');
+      tasks.forEach(t => box.appendChild(taskRow(t)));
+      wrap.appendChild(box);
+    } else {
+      wrap.appendChild(el('p', 'hint', '這天還沒有待辦。'));
+    }
+    const act = el('div', 'actions');
+    act.style.marginTop = '18px';
+    const close = el('button', 'btn', '關閉');
+    close.type = 'button';
+    close.addEventListener('click', closeSheet);
+    act.appendChild(close);
+    wrap.appendChild(act);
+    return wrap;
+  }
+  function openDaySheet(date, focusInput) {
+    openSheet(buildDaySheet(date), { kind: 'day', date }, focusInput ? '#day-input' : null);
+  }
+  function refreshDaySheet() {
+    const sheet = $('#sheet');
+    const top = sheet.scrollTop;
+    withKeep(() => sheet.replaceChildren(buildDaySheet(sheetState.date)));
+    sheet.scrollTop = top;
+  }
+
+  function openTaskSheet(id) {
+    const t = Store.get('tasks', id);
+    if (!t) return;
+    const f = el('form', 'form');
+    f.appendChild(sheetTitle('編輯待辦'));
+    const title = el('input'); title.type = 'text'; title.maxLength = 120; title.required = true; title.value = t.title || '';
+    f.appendChild(field('內容', title, 't-title'));
+    const date = el('input'); date.type = 'date'; date.value = t.date || '';
+    f.appendChild(field('日期（可以留空，會放在「還沒排日期」）', date, 't-date'));
+    const rf = realmField(realmOf(t));
+    f.appendChild(rf.node);
+    const star = el('select');
+    [['', '一般'], ['1', '★ 重要']].forEach(([v, l]) => { const o = el('option', null, l); o.value = v; o.selected = (v === '1') === !!t.star; star.appendChild(o); });
+    f.appendChild(field('重要程度', star, 't-star'));
+    const proj = el('select');
+    const none = el('option', null, '不指定'); none.value = ''; proj.appendChild(none);
+    Store.list('projects').sort((a, b) => rank(a.status) - rank(b.status)).forEach(p => {
+      const o = el('option', null, p.title + (App.mode === 'both' ? '（' + REALM[realmOf(p)].label + '）' : '')); o.value = p.id; o.selected = p.id === t.projectId; proj.appendChild(o);
+    });
+    proj.addEventListener('change', () => {
+      const p = proj.value ? Store.get('projects', proj.value) : null;
+      if (p) rf.set(realmOf(p));          // 跟著專案走，不用再手動切
+    });
+    f.appendChild(field('屬於哪個專案', proj, 't-proj'));
+    const note = el('textarea'); note.maxLength = 300; note.rows = 2; note.value = t.note || '';
+    note.placeholder = '補充說明、連結、要記得的細節';
+    f.appendChild(field('備註', note, 't-note'));
+    const act = el('div', 'actions');
+    const del = el('button', 'btn', '刪除'); del.type = 'button';
+    armedDelete(del, () => { Store.del('tasks', t.id); closeSheet(); });
+    const cancel = el('button', 'btn', '取消'); cancel.type = 'button'; cancel.addEventListener('click', closeSheet);
+    const save = el('button', 'btn primary', '存下'); save.type = 'submit';
+    act.append(del, el('span', 'grow'), cancel, save);
+    f.appendChild(act);
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const v = title.value.trim();
+      if (!v) return;
+      const rec = { ...t, title: v, realm: rf.get() };
+      if (date.value) rec.date = date.value; else delete rec.date;
+      if (star.value) rec.star = true; else delete rec.star;
+      if (proj.value) rec.projectId = proj.value; else delete rec.projectId;
+      const n = note.value.trim();
+      if (n) rec.note = n; else delete rec.note;
+      Store.put('tasks', rec);
+      closeSheet();
+    });
+    openSheet(f, { kind: 'form' }, '#t-title');
+  }
+
+  function openHabitSheet(id) {
+    const h = id ? Store.get('habits', id) : null;
+    const f = el('form', 'form');
+    f.appendChild(sheetTitle(h ? '編輯習慣' : '新增習慣'));
+    const title = el('input'); title.type = 'text'; title.maxLength = 40; title.required = true; title.value = h ? (h.title || '') : '';
+    title.placeholder = '例如：早上喝一杯水';
+    f.appendChild(field('習慣名稱', title, 'h-title'));
+    const rf = realmField(h ? realmOf(h) : newRealm());
+    f.appendChild(rf.node);
+    const act = el('div', 'actions');
+    if (h) {
+      const del = el('button', 'btn', '刪除'); del.type = 'button';
+      armedDelete(del, () => {
+        Store.list('checks').filter(c => c.habitId === h.id).forEach(c => Store.del('checks', c.id));
+        Store.del('habits', h.id);
+        closeSheet();
+        toast('已刪除這個習慣和它的打卡紀錄');
+      });
+      act.append(del);
+    }
+    const cancel = el('button', 'btn', '取消'); cancel.type = 'button'; cancel.addEventListener('click', closeSheet);
+    const save = el('button', 'btn primary', '存下'); save.type = 'submit';
+    act.append(el('span', 'grow'), cancel, save);
+    f.appendChild(act);
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const v = title.value.trim();
+      if (!v) { title.focus(); return; }
+      Store.put('habits', { ...(h || { createdAt: Date.now() }), title: v, realm: rf.get() });
+      closeSheet();
+      toast('已存下');
+    });
+    openSheet(f, { kind: 'form' }, '#h-title');
+  }
+
+  function openMoodSheet(date) {
+    const wrap = el('div', 'form');
+    wrap.appendChild(sheetTitle(fmtMD(date), '星期' + WD[parse(date).getDay()]));
+    wrap.appendChild(moodCard(date, 'sheet'));
+    const act = el('div', 'actions');
+    if (Store.get('moods', date)) {
+      const del = el('button', 'btn', '清掉這天'); del.type = 'button';
+      armedDelete(del, () => { Store.del('moods', date); closeSheet(); });
+      act.appendChild(del);
+    }
+    const close = el('button', 'btn primary', '完成'); close.type = 'button'; close.addEventListener('click', closeSheet);
+    act.append(el('span', 'grow'), close);
+    wrap.appendChild(act);
+    openSheet(wrap, { kind: 'form' });
+  }
+
+  function openIdeaSheet(id) {
+    const it = Store.get('inbox', id);
+    if (!it) return;
+    const f = el('form', 'form');
+    f.appendChild(sheetTitle('編輯靈感'));
+    const text = el('textarea'); text.maxLength = 300; text.rows = 4; text.required = true; text.value = it.text || '';
+    f.appendChild(field('內容', text, 'i-text'));
+    const rf = realmField(realmOf(it));
+    f.appendChild(rf.node);
+    const act = el('div', 'actions');
+    const del = el('button', 'btn', '刪除'); del.type = 'button';
+    armedDelete(del, () => { Store.del('inbox', it.id); closeSheet(); });
+    const cancel = el('button', 'btn', '取消'); cancel.type = 'button'; cancel.addEventListener('click', closeSheet);
+    const save = el('button', 'btn primary', '存下'); save.type = 'submit';
+    act.append(del, el('span', 'grow'), cancel, save);
+    f.appendChild(act);
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const v = text.value.trim();
+      if (!v) return;
+      Store.put('inbox', { ...it, text: v, realm: rf.get() });
+      closeSheet();
+    });
+    openSheet(f, { kind: 'form' }, '#i-text');
+  }
+
+  function openConvertSheet(id) {
+    const it = Store.get('inbox', id);
+    if (!it) return;
+    const f = el('form', 'form');
+    f.appendChild(sheetTitle('排成待辦'));
+    const title = el('input'); title.type = 'text'; title.maxLength = 120; title.required = true; title.value = it.text.split('\n')[0].slice(0, 120);
+    f.appendChild(field('待辦內容', title, 'c-title'));
+    const date = el('input'); date.type = 'date'; date.value = todayStr();
+    f.appendChild(field('哪一天做（清掉就是還沒排日期）', date, 'c-date'));
+    const rf = realmField(realmOf(it));
+    f.appendChild(rf.node);
+    f.appendChild(el('p', 'hint', '排好之後，這則會從收集箱移走。'));
+    const act = el('div', 'actions');
+    const cancel = el('button', 'btn', '取消'); cancel.type = 'button'; cancel.addEventListener('click', closeSheet);
+    const go1 = el('button', 'btn primary', '排進去'); go1.type = 'submit';
+    act.append(el('span', 'grow'), cancel, go1);
+    f.appendChild(act);
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const v = title.value.trim();
+      if (!v) return;
+      const rec = { title: v, done: false, realm: rf.get(), createdAt: Date.now() };
+      if (date.value) rec.date = date.value;
+      if (it.text.length > 120 || it.text.includes('\n')) rec.note = it.text.slice(0, 300);
+      Store.put('tasks', rec);
+      Store.del('inbox', it.id);
+      closeSheet();
+      toast(date.value ? '已排進 ' + fmtMD(date.value) : '已放進待辦清單');
+    });
+    openSheet(f, { kind: 'form' }, '#c-title');
+  }
+
+  function openProjectSheet(id) {
+    const p = id ? Store.get('projects', id) : null;
+    const f = el('form', 'form');
+    f.appendChild(sheetTitle(p ? '編輯專案' : '新增專案'));
+    const title = el('input'); title.type = 'text'; title.maxLength = 80; title.required = true; title.value = p ? (p.title || '') : '';
+    const hints = { day: '例如：九月月報整理', night: '例如：縫際 · 角色設定整理' };
+    const rf = realmField(p ? realmOf(p) : newRealm(), k => { title.placeholder = hints[k]; });
+    title.placeholder = hints[rf.get()];
+    f.appendChild(field('專案名稱', title, 'p-title'));
+    f.appendChild(rf.node);
+    const status = el('select');
+    STATUS.forEach(s => { const o = el('option', null, s.emoji + ' ' + s.label); o.value = s.key; status.appendChild(o); });
+    status.value = p ? norm(p.status) : (BY[App.filter] ? App.filter : 'doing');
+    f.appendChild(field('狀態', status, 'p-status'));
+    const two = el('div', 'field two');
+    const sd = el('div'); const start = el('input'); start.type = 'date'; start.value = p ? (p.start || '') : '';
+    const sl = el('label', null, '開始日'); sl.htmlFor = 'p-start'; start.id = 'p-start'; sd.append(sl, start);
+    const dd = el('div'); const due = el('input'); due.type = 'date'; due.value = p ? (p.due || '') : '';
+    const dl = el('label', null, '截止日'); dl.htmlFor = 'p-due'; due.id = 'p-due'; dd.append(dl, due);
+    sd.style.display = dd.style.display = 'grid';
+    two.append(sd, dd);
+    f.appendChild(two);
+    f.appendChild(el('p', 'hint', '設了日期，專案就會出現在週計畫和月計畫的那幾天。只填一個也可以。'));
+    const note = el('textarea'); note.maxLength = 400; note.rows = 3; note.value = p ? (p.note || '') : '';
+    note.placeholder = '目前做到哪、下一步要做什麼';
+    f.appendChild(field('進度與備註', note, 'p-note'));
+    const act = el('div', 'actions');
+    if (p) {
+      const del = el('button', 'btn', '刪除'); del.type = 'button';
+      armedDelete(del, () => {
+        Store.list('tasks').filter(t => t.projectId === p.id).forEach(t => { const r = { ...t }; delete r.projectId; Store.put('tasks', r); });
+        Store.del('projects', p.id);
+        closeSheet();
+        toast('已刪除');
+      });
+      act.append(del);
+    }
+    const cancel = el('button', 'btn', '取消'); cancel.type = 'button'; cancel.addEventListener('click', closeSheet);
+    const save = el('button', 'btn primary', '存下'); save.type = 'submit';
+    act.append(el('span', 'grow'), cancel, save);
+    f.appendChild(act);
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const v = title.value.trim();
+      if (!v) { title.focus(); return; }
+      if (start.value && due.value && due.value < start.value) { toast('截止日不能比開始日早'); due.focus(); return; }
+      const rec = { ...(p || { createdAt: Date.now() }), title: v, realm: rf.get(), status: status.value, note: note.value.trim(), updatedAt: todayStr() };
+      if (start.value) rec.start = start.value; else delete rec.start;
+      if (due.value) rec.due = due.value; else delete rec.due;
+      Store.put('projects', rec);
+      closeSheet();
+      toast('已存下');
+    });
+    openSheet(f, { kind: 'form' }, '#p-title');
+  }
+
+  function openBackupSheet() {
+    const wrap = el('div', 'form');
+    wrap.appendChild(sheetTitle('備份與匯入'));
+    wrap.appendChild(el('p', 'hint', '把下面這段文字存起來就是備份。換手機、換瀏覽器或清除網站資料之前先備份，之後貼到「匯入」就能還原。'));
+    const out = el('textarea', 'backup-box');
+    out.readOnly = true; out.id = 'b-out';
+    out.value = JSON.stringify(Store.exportData(), null, 1);
+    out.setAttribute('aria-label', '備份內容');
+    wrap.appendChild(out);
+    const row = el('div', 'actions');
+    const copy = el('button', 'btn soft', '複製備份'); copy.type = 'button';
+    copy.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(out.value); toast('已複製'); }
+      catch (e) { out.focus(); out.select(); toast('請長按選取後複製'); }
+    });
+    row.appendChild(copy);
+    if (Store.mode() === 'local') {
+      const dl = el('button', 'btn', '下載檔案'); dl.type = 'button';
+      dl.addEventListener('click', () => {
+        try {
+          const blob = new Blob([out.value], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'yousao-backup-' + todayStr() + '.json';
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+        } catch (e) { toast('這個瀏覽器不能直接下載，請改用複製'); }
+      });
+      row.appendChild(dl);
+    }
+    wrap.appendChild(row);
+
+    wrap.appendChild(secTitle('匯入'));
+    const inp = el('textarea', 'backup-box'); inp.id = 'b-in'; inp.placeholder = '把備份文字貼在這裡'; inp.setAttribute('aria-label', '要匯入的備份');
+    wrap.appendChild(inp);
+    const row2 = el('div', 'actions');
+    const close = el('button', 'btn', '關閉'); close.type = 'button'; close.addEventListener('click', closeSheet);
+    const go = el('button', 'btn primary', '匯入'); go.type = 'button';
+    go.addEventListener('click', () => {
+      try {
+        const o = JSON.parse(inp.value);
+        if (!o || typeof o !== 'object' || !Store.cols.some(c => o[c])) throw new Error('bad');
+        const n = Store.importData(o);
+        closeSheet();
+        toast('已匯入 ' + n + ' 筆（編號相同的會被覆蓋）');
+      } catch (e) { toast('格式不對，請貼上完整的備份文字'); }
+    });
+    row2.append(el('span', 'grow'), close, go);
+    wrap.appendChild(row2);
+    openSheet(wrap, { kind: 'form' });
+  }
+
+  /* ---------- drawer ---------- */
+  const drawer = $('#drawer'), scrim = $('#scrim'), menuBtn = $('#menu-btn');
+  function openDrawer() {
+    drawer.inert = false;
+    drawer.classList.add('open');
+    scrim.hidden = false;
+    menuBtn.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('lock');
+    const cur = drawer.querySelector('[aria-current="page"]') || drawer.querySelector('button');
+    if (cur) cur.focus({ preventScroll: true });
+  }
+  function closeDrawer(returnFocus = true) {
+    drawer.classList.remove('open');
+    drawer.inert = true;
+    scrim.hidden = true;
+    menuBtn.setAttribute('aria-expanded', 'false');
+    if (!sheetState) document.body.classList.remove('lock');
+    if (returnFocus) menuBtn.focus({ preventScroll: true });
+  }
+  function go(view) {
+    App.view = view;
+    lsSet('yousao.view', view);
+    closeDrawer(false);
+    render();
+    window.scrollTo(0, 0);
+    $('#main').focus({ preventScroll: true });
+  }
+  function buildNav() {
+    const ul = $('#nav');
+    NAV.forEach(n => {
+      if (n.grp) ul.appendChild(el('li', 'nav-group', n.grp));
+      const li = el('li');
+      const b = el('button');
+      b.type = 'button';
+      b.dataset.view = n.key;
+      b.append(icon(n.icon), document.createTextNode(n.label));
+      b.addEventListener('click', () => go(n.key));
+      li.appendChild(b);
+      ul.appendChild(li);
+    });
+  }
+  function updateNav() {
+    $('#nav').querySelectorAll('button').forEach(b => {
+      if (b.dataset.view === App.view) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+      const old = b.querySelector('.badge');
+      if (old) old.remove();
+      if (b.dataset.view === 'inbox') {
+        const n = Store.list('inbox').filter(inMode).length;
+        if (n) b.appendChild(el('span', 'badge', String(n)));
+      }
+    });
+  }
+  function renderDrawerSec() {
+    const box = $('#drawer-sec');
+    box.replaceChildren();
+
+    const pick = el('label', 'row-pick');
+    pick.appendChild(el('span', null, '每週從'));
+    const sel = el('select');
+    [['1', '星期一'], ['0', '星期日']].forEach(([v, t]) => { const o = el('option', null, t); o.value = v; o.selected = Number(v) === Settings.weekStart; sel.appendChild(o); });
+    sel.addEventListener('change', () => { Settings.weekStart = Number(sel.value); lsSet('yousao.weekStart', sel.value); render(); });
+    pick.appendChild(sel);
+    box.appendChild(pick);
+
+    const bk = el('button', 'drawer-link');
+    bk.type = 'button';
+    bk.append(icon('data'), document.createTextNode('備份與匯入'));
+    bk.addEventListener('click', () => { closeDrawer(false); openBackupSheet(); });
+    box.appendChild(bk);
+
+    const standalone = (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone;
+    if (Store.mode() === 'local' && !standalone) {
+      const d = el('details');
+      d.appendChild(el('summary', null, '怎麼放到手機桌面'));
+      d.appendChild(el('p', null, 'iPhone：用 Safari 開這個網址，按下方的分享圖示，選「加入主畫面」。Android：用 Chrome 開，按右上角選單，選「安裝應用程式」或「加到主畫面」。'));
+      box.appendChild(d);
+    }
+    box.appendChild(el('p', 'mode-note', Store.mode() === 'db'
+      ? '資料存在 Claude 雲端，電腦和手機會同步。'
+      : '資料存在這支裝置裡，不會自動同步到別的裝置。'));
+    if (!Store.persistOk()) box.appendChild(el('p', 'mode-note', '注意：這個瀏覽器目前存不了資料（可能是無痕模式），關掉頁面資料就會消失。'));
+    box.appendChild(el('p', 'credit', '字體：辰宇落雁體 Thin Monospaced v1.0（SIL OFL 1.1，網頁嵌入用的改名轉檔版）'));
+  }
+
+  /* ---------- top bar & render ---------- */
+  function buildSeg() {
+    const seg = $('#mode-seg');
+    MODES.forEach(m => {
+      const b = el('button', null, m.label);
+      b.type = 'button';
+      b.setAttribute('role', 'radio');
+      b.dataset.m = m.key;
+      b.addEventListener('click', () => setMode(m.key));
+      seg.appendChild(b);
+    });
+  }
+  function updateSeg() {
+    $('#mode-seg').querySelectorAll('button').forEach(b => b.setAttribute('aria-checked', String(b.dataset.m === App.mode)));
+  }
+  function setMode(m) {
+    if (m === App.mode) return;
+    App.mode = m;
+    lsSet('yousao.mode', m);
+    applyTheme();
+    updateSeg();
+    render();
+  }
+  function renderTop() {
+    updateSeg();
+    $('#top-title').textContent = VIEWNAME[App.view];
+    const box = $('#top-actions');
+    box.replaceChildren();
+    if (App.view === 'week' || App.view === 'month') {
+      const b = el('button', 'text-btn', '今天'); b.type = 'button';
+      b.addEventListener('click', () => { App.anchor = todayStr(); render(); });
+      box.appendChild(b);
+    }
+  }
+  // 手指按著的時候先不重畫整頁（雲端同步的回音若剛好這時進來，會把按鈕換掉、這一下就點空了）。
+  // 放開後等 click 跑完再補畫；沒有 click（拖曳、長按）就最多等 450ms。
+  let pressAt = 0, renderQueued = false, releaseTimer = 0;
+  const pressing = () => pressAt && Date.now() - pressAt < 1000;
+  const released = () => { pressAt = 0; if (renderQueued) { renderQueued = false; render(); } };
+  const releaseIn = ms => { clearTimeout(releaseTimer); releaseTimer = setTimeout(released, ms); };
+  document.addEventListener('pointerdown', () => { pressAt = Date.now(); clearTimeout(releaseTimer); }, true);
+  document.addEventListener('pointerup', () => releaseIn(450), true);
+  document.addEventListener('pointercancel', () => releaseIn(0), true);
+  document.addEventListener('click', () => releaseIn(0), true);
+  function render() {
+    if (pressing()) {
+      if (!renderQueued) { renderQueued = true; setTimeout(() => { if (renderQueued) { renderQueued = false; render(); } }, 1050); }
+      return;
+    }
+    withKeep(() => {
+      renderTop();
+      updateNav();
+      const main = $('#main');
+      main.classList.toggle('wide', App.view === 'week');
+      main.replaceChildren();
+      VIEWS[App.view](main);
+    });
+    if (sheetState && sheetState.kind === 'day') refreshDaySheet();
+    if (!Store.persistOk() && !render.warned) { render.warned = true; renderDrawerSec(); toast('這個瀏覽器存不了資料，關掉頁面就會消失'); }
+  }
+
+  /* ---------- wiring ---------- */
+  menuBtn.addEventListener('click', openDrawer);
+  $('#drawer-close').addEventListener('click', () => closeDrawer());
+  scrim.addEventListener('click', () => closeDrawer());
+  $('#sheet-wrap').addEventListener('mousedown', e => { if (e.target.id === 'sheet-wrap') closeSheet(); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    if (sheetState) closeSheet(); else if (drawer.classList.contains('open')) closeDrawer();
+  });
+
+  function registerSW() {
+    if (!('serviceWorker' in navigator) || window.claude || !/^https?:$/.test(location.protocol)) return;
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+  }
+
+  // 隔天回到畫面時，「今天」要跟著換
+  let dayKey = todayStr();
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    const t = todayStr();
+    if (t !== dayKey) { dayKey = t; App.anchor = t; }
+    render();
+  });
+
+  buildSeg();
+  buildNav();
+  updateNav();
+  Store.init().then(() => {
+    Store.onChange(render);
+    renderDrawerSec();
+    render();
+    registerSW();
+  });
+})();
+
+</script>
+</body>
+</html>

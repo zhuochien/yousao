@@ -1,0 +1,17 @@
+{
+  "name": "酌有韶",
+  "short_name": "酌有韶",
+  "description": "日用、夜用二合一：專案、待辦、週月計畫、習慣、狀態、靈感",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6EBE8",
+  "theme_color": "#F6EBE8",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
