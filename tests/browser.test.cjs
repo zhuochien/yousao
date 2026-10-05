@@ -16,6 +16,13 @@ workspace.proposal = { id: 'integration-plan', author: 'GPT', summary: '安排�
 async function nav(page, view) {
   await page.getByRole('button', { name: '開啟選單', exact: true }).click();
   await page.locator('#nav button[data-view="' + view + '"]').click();
+  await page.locator('#main').getByRole('heading', { name: { studio: '角色工作室', cloud: '雲端與經紀人' }[view], level: 2, exact: true }).waitFor();
+  await page.locator('#drawer').evaluate(node => Promise.all(node.getAnimations().map(a => a.finished)));
+}
+async function screenshot(page, name) {
+  await page.locator('#toast').waitFor({ state: 'hidden', timeout: 5000 });
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({ path: out + '/' + name, fullPage: true, animations: 'disabled' });
 }
 (async () => {
   const browser = await chromium.launch({ headless: true, executablePath: process.env.YOUS_AO_CHROMIUM || chromium.executablePath() });
@@ -40,7 +47,7 @@ async function nav(page, view) {
     });
     await page.goto(origin, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: '角色工作室', level: 2, exact: true }).waitFor();
-    await page.screenshot({ path: out + '/studio-desktop.png', fullPage: true });
+    await screenshot(page, 'studio-desktop.png');
     await page.getByRole('button', { name: '編輯角色專案' }).click();
     await page.locator('#p-character').fill('測試角色二');
     await page.locator('#p-stage').selectOption('opening');
@@ -77,10 +84,10 @@ async function nav(page, view) {
     await page.getByRole('button', { name: '取消', exact: true }).click();
     assert.equal(await page.evaluate(() => JSON.stringify(localStorage).includes('TEST_IN_MEMORY_TOKEN')), false);
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.screenshot({ path: out + '/cloud-mobile.png', fullPage: true });
+    await screenshot(page, 'cloud-mobile.png');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     await nav(page, 'studio');
-    await page.screenshot({ path: out + '/studio-mobile.png', fullPage: true });
+    await screenshot(page, 'studio-mobile.png');
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     await page.evaluate(async () => { await navigator.serviceWorker.ready; if (!navigator.serviceWorker.controller) await new Promise(resolve => navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true })); });
     await context.setOffline(true); await page.reload({ waitUntil: 'domcontentloaded' });
