@@ -460,6 +460,18 @@ button.realm-toggle:hover { border-color: currentColor; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
+/* ---------- creative manager ---------- */
+.manager-panel { padding: 18px; margin: 0 0 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--surface); display: grid; gap: 12px; min-width: 0; }
+.manager-panel .actions { justify-content: flex-start; }
+.manager-big { margin: 0; font-size: 26px; line-height: 1.4; }
+.manager-panel .qadd .field { flex: 1; }
+.manager-check { display: flex; align-items: flex-start; gap: 10px; font-size: 17px; overflow-wrap: anywhere; }
+.manager-check input { width: 20px; height: 20px; flex: none; margin-top: 4px; accent-color: var(--accent); }
+.manager-change { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; }
+.manager-change .hint { white-space: pre-wrap; overflow-wrap: anywhere; }
+.form details { overflow-wrap: anywhere; }
+.form li + li { margin-top: 8px; }
+button:disabled { opacity: .5; cursor: wait; }
 </style>
 </head>
 <body>
@@ -529,6 +541,10 @@ button.realm-toggle:hover { border-color: currentColor; }
 </div>
 <p class="toast" id="toast" role="status" hidden></p>
 
+<script src="manager-data.js"></script>
+<script src="app-store.js"></script>
+<script src="google-drive.js"></script>
+<script src="manager-ui.js"></script>
 <script>
 (() => {
   'use strict';
@@ -552,6 +568,8 @@ button.realm-toggle:hover { border-color: currentColor; }
     { key: 'todo',     label: '待辦清單',   icon: 'list' },
     { key: 'week',     label: '週計畫',     icon: 'week' },
     { key: 'month',    label: '月計畫',     icon: 'month' },
+    { key: 'studio',   label: '角色工作室', icon: 'projects', grp: '創作經紀人' },
+    { key: 'cloud',    label: '雲端與經紀人', icon: 'data' },
     { key: 'habits',   label: '習慣打卡',   icon: 'habit', grp: '日常小幫手' },
     { key: 'mood',     label: '今日狀態',   icon: 'mood' },
     { key: 'inbox',    label: '靈感收集箱', icon: 'inbox' },
@@ -612,103 +630,9 @@ button.realm-toggle:hover { border-color: currentColor; }
   const Settings = { weekStart: 1 };
   { const v = lsGet('yousao.weekStart'); if (v === '0' || v === '1') Settings.weekStart = Number(v); }
 
-  /* ---------- store: Claude cloud db when present, otherwise this device ---------- */
-  const Store = (() => {
-    const KEY = 'yousao.v1';
-    const COLS = ['projects', 'tasks', 'habits', 'checks', 'moods', 'inbox'];
-    const cache = Object.fromEntries(COLS.map(c => [c, new Map()]));
-    const listeners = [];
-    let mode = 'local', cols = null, chain = Promise.resolve(), persistOk = true, errHandler = () => {};
-
-    const emit = () => listeners.forEach(f => f());
-    const strip = r => { const { id, ...rest } = r; return JSON.parse(JSON.stringify(rest)); };
-
-    function loadLocal() {
-      try {
-        const raw = localStorage.getItem(KEY);
-        if (raw) {
-          const o = JSON.parse(raw);
-          COLS.forEach(c => Object.entries(o[c] || {}).forEach(([id, r]) => cache[c].set(id, { ...r, id })));
-        }
-        localStorage.setItem(KEY + '.probe', '1');
-        localStorage.removeItem(KEY + '.probe');
-      } catch (e) { persistOk = false; }
-    }
-    function saveLocal() {
-      try {
-        const o = { v: 1 };
-        COLS.forEach(c => { o[c] = Object.fromEntries([...cache[c]].map(([id, r]) => [id, strip(r)])); });
-        localStorage.setItem(KEY, JSON.stringify(o));
-        persistOk = true;
-      } catch (e) { persistOk = false; }
-    }
-    async function init() {
-      let db = null;
-      if (window.claude && typeof window.claude.use === 'function') {
-        try { db = await window.claude.use('db'); } catch (e) { db = null; }
-      }
-      if (!db) { loadLocal(); return; }
-      mode = 'db';
-      cols = Object.fromEntries(COLS.map(c => [c, db.collection(c)]));
-      await new Promise(resolve => {
-        const seen = new Set();
-        const timer = setTimeout(resolve, 8000);
-        const mark = c => { seen.add(c); if (seen.size === COLS.length) { clearTimeout(timer); resolve(); } };
-        COLS.forEach(c => cols[c].onSnapshot(
-          snap => {
-            cache[c] = new Map(snap.docs.map(d => [d.id, { ...d.data(), id: d.id }]));
-            mark(c);
-            emit();
-          },
-          () => mark(c)
-        ));
-      });
-    }
-    function persist(c, r, isDel) {
-      if (mode === 'db') {
-        chain = chain
-          .then(() => (isDel ? cols[c].doc(r.id).delete() : cols[c].doc(r.id).set(strip(r))))
-          .catch(e => errHandler(e));
-      } else {
-        saveLocal();
-      }
-    }
-    return {
-      init,
-      cols: COLS,
-      mode: () => mode,
-      persistOk: () => persistOk,
-      onChange: f => listeners.push(f),
-      onError: f => { errHandler = f; },
-      list: c => [...cache[c].values()],
-      get: (c, id) => cache[c].get(id) || null,
-      put(c, rec) {
-        const r = { ...rec };
-        if (!r.id) r.id = uid();
-        cache[c].set(r.id, r);
-        emit();
-        persist(c, r, false);
-        return r;
-      },
-      del(c, id) {
-        cache[c].delete(id);
-        emit();
-        persist(c, { id }, true);
-      },
-      exportData() {
-        const o = { app: 'yousao', v: 2, exportedAt: new Date().toISOString() };
-        COLS.forEach(c => { o[c] = Object.fromEntries([...cache[c]].map(([id, r]) => [id, strip(r)])); });
-        return o;
-      },
-      importData(o) {
-        let n = 0;
-        COLS.forEach(c => Object.entries((o && o[c]) || {}).forEach(([id, r]) => {
-          if (r && typeof r === 'object') { this.put(c, { ...r, id }); n++; }
-        }));
-        return n;
-      },
-    };
-  })();
+  /* ---------- Store and explicit Google Drive adapter ---------- */
+  const Store = window.YousaoStore.create({ uid, claude: window.claude });
+  const Drive = window.YousaoDrive.create();
 
   /* ---------- app state ---------- */
   const App = {
@@ -935,6 +859,7 @@ button.realm-toggle:hover { border-color: currentColor; }
     body.appendChild(el('span', 'task-title', t.title));
     const p = t.projectId ? Store.get('projects', t.projectId) : null;
     if (p) body.appendChild(el('span', 'tag', p.title));
+    if (t.minutes) body.appendChild(el('span', 'tag', t.minutes + ' 分鐘'));
     if (opts.showDate && t.date) body.appendChild(el('span', 'tag', fmtShort(t.date)));
     if (App.mode === 'both') body.appendChild(rtag(realmOf(t), opts.compact));
     if (!opts.star && t.star) { const m = el('span', 'star-mark'); m.setAttribute('aria-label', '重要'); m.appendChild(icon('star')); body.appendChild(m); }
@@ -1626,7 +1551,8 @@ button.realm-toggle:hover { border-color: currentColor; }
     main.appendChild(box);
   }
 
-  const VIEWS = { projects: viewProjects, today: viewToday, todo: viewTodo, week: viewWeek, month: viewMonth, habits: viewHabits, mood: viewMood, inbox: viewInbox };
+  const ManagerUI = window.YousaoManagerUI.create({ Store, Drive, el, field, viewHead, sheetTitle, secTitle, taskRow, openSheet, closeSheet, openProjectSheet, go, toast, todayStr, parse, addDays, ymd, fmtShort });
+  const VIEWS = { studio: ManagerUI.viewStudio, cloud: ManagerUI.viewCloud, projects: viewProjects, today: viewToday, todo: viewTodo, week: viewWeek, month: viewMonth, habits: viewHabits, mood: viewMood, inbox: viewInbox };
 
   /* ---------- sheets ---------- */
   function openSheet(node, state, focusSel) {
@@ -1738,6 +1664,12 @@ button.realm-toggle:hover { border-color: currentColor; }
     const note = el('textarea'); note.maxLength = 300; note.rows = 2; note.value = t.note || '';
     note.placeholder = '補充說明、連結、要記得的細節';
     f.appendChild(field('備註', note, 't-note'));
+    const minutes = el('input'); minutes.type = 'number'; minutes.min = '0'; minutes.max = '10080'; minutes.step = '5'; minutes.value = t.minutes || ''; minutes.placeholder = '例如 30';
+    f.appendChild(field('預估時間（分鐘，可留空）', minutes, 't-minutes'));
+    const stage = el('select'); const unset = el('option', null, '不指定'); unset.value = ''; stage.appendChild(unset);
+    Object.entries(window.YousaoManager.STAGES).forEach(([key, label]) => { const o = el('option', null, label); o.value = key; stage.appendChild(o); }); stage.value = t.stage || '';
+    f.appendChild(field('製作階段', stage, 't-stage'));
+
     const act = el('div', 'actions');
     const del = el('button', 'btn', '刪除'); del.type = 'button';
     armedDelete(del, () => { Store.del('tasks', t.id); closeSheet(); });
@@ -1755,6 +1687,8 @@ button.realm-toggle:hover { border-color: currentColor; }
       if (proj.value) rec.projectId = proj.value; else delete rec.projectId;
       const n = note.value.trim();
       if (n) rec.note = n; else delete rec.note;
+      if (minutes.value) rec.minutes = Number(minutes.value); else delete rec.minutes;
+      if (stage.value) rec.stage = stage.value; else delete rec.stage;
       Store.put('tasks', rec);
       closeSheet();
     });
@@ -1870,13 +1804,14 @@ button.realm-toggle:hover { border-color: currentColor; }
     openSheet(f, { kind: 'form' }, '#c-title');
   }
 
-  function openProjectSheet(id) {
+  function openProjectSheet(id, creative = false) {
     const p = id ? Store.get('projects', id) : null;
     const f = el('form', 'form');
     f.appendChild(sheetTitle(p ? '編輯專案' : '新增專案'));
     const title = el('input'); title.type = 'text'; title.maxLength = 80; title.required = true; title.value = p ? (p.title || '') : '';
     const hints = { day: '例如：九月月報整理', night: '例如：縫際 · 角色設定整理' };
-    const rf = realmField(p ? realmOf(p) : newRealm(), k => { title.placeholder = hints[k]; });
+    let creativeFields;
+    const rf = realmField(p ? realmOf(p) : creative ? 'night' : newRealm(), k => { title.placeholder = hints[k]; if (creativeFields) creativeFields.hidden = k !== 'night'; });
     title.placeholder = hints[rf.get()];
     f.appendChild(field('專案名稱', title, 'p-title'));
     f.appendChild(rf.node);
@@ -1896,6 +1831,15 @@ button.realm-toggle:hover { border-color: currentColor; }
     const note = el('textarea'); note.maxLength = 400; note.rows = 3; note.value = p ? (p.note || '') : '';
     note.placeholder = '目前做到哪、下一步要做什麼';
     f.appendChild(field('進度與備註', note, 'p-note'));
+    creativeFields = el('div', 'form'); creativeFields.hidden = rf.get() !== 'night';
+    const character = el('input'); character.type = 'text'; character.maxLength = 80; character.value = p ? (p.characterName || '') : ''; character.placeholder = '一位角色，或多人企劃名稱';
+    creativeFields.appendChild(field('角色／企劃名稱', character, 'p-character'));
+    const stage = el('select'); const unset = el('option', null, '尚未設定'); unset.value = ''; stage.appendChild(unset);
+    Object.entries(window.YousaoManager.STAGES).forEach(([key, label]) => { const o = el('option', null, label); o.value = key; stage.appendChild(o); }); stage.value = p ? (p.stage || '') : '';
+    creativeFields.appendChild(field('目前製作階段', stage, 'p-stage'));
+    const priority = el('select'); [['high', '優先推進'], ['normal', '一般'], ['low', '先收著']].forEach(([key, text]) => { const o = el('option', null, text); o.value = key; priority.appendChild(o); }); priority.value = p ? (p.priority || 'normal') : 'normal';
+    creativeFields.appendChild(field('創作優先度', priority, 'p-priority')); f.appendChild(creativeFields);
+
     const act = el('div', 'actions');
     if (p) {
       const del = el('button', 'btn', '刪除'); del.type = 'button';
@@ -1919,6 +1863,7 @@ button.realm-toggle:hover { border-color: currentColor; }
       const rec = { ...(p || { createdAt: Date.now() }), title: v, realm: rf.get(), status: status.value, note: note.value.trim(), updatedAt: todayStr() };
       if (start.value) rec.start = start.value; else delete rec.start;
       if (due.value) rec.due = due.value; else delete rec.due;
+      if (rf.get() === 'night') { rec.characterName = character.value.trim(); rec.stage = stage.value; rec.priority = priority.value; }
       Store.put('projects', rec);
       closeSheet();
       toast('已存下');
@@ -1968,6 +1913,7 @@ button.realm-toggle:hover { border-color: currentColor; }
       try {
         const o = JSON.parse(inp.value);
         if (!o || typeof o !== 'object' || !Store.cols.some(c => o[c])) throw new Error('bad');
+        ManagerUI.backupNow();
         const n = Store.importData(o);
         closeSheet();
         toast('已匯入 ' + n + ' 筆（編號相同的會被覆蓋）');
@@ -2057,7 +2003,7 @@ button.realm-toggle:hover { border-color: currentColor; }
     }
     box.appendChild(el('p', 'mode-note', Store.mode() === 'db'
       ? '資料存在 Claude 雲端，電腦和手機會同步。'
-      : '資料存在這支裝置裡，不會自動同步到別的裝置。'));
+      : '資料存在這支裝置裡。到「雲端與經紀人」手動上傳與下載。'));
     if (!Store.persistOk()) box.appendChild(el('p', 'mode-note', '注意：這個瀏覽器目前存不了資料（可能是無痕模式），關掉頁面資料就會消失。'));
     box.appendChild(el('p', 'credit', '字體：辰宇落雁體 Thin Monospaced v1.0（SIL OFL 1.1，網頁嵌入用的改名轉檔版）'));
   }

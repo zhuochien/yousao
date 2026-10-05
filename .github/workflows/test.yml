@@ -1,0 +1,38 @@
+name: PWA checks
+
+on:
+  push:
+    branches: [main, codex/google-drive-creative-manager]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Store and Drive safety tests
+        run: node --test tests/store.test.cjs
+      - name: Install browser testing tools
+        run: |
+          npm install --no-save --package-lock=false playwright@1.62.1
+          npx playwright install --with-deps chromium
+      - name: Serve PWA
+        run: python3 -m http.server 8765 --bind 127.0.0.1 > "$RUNNER_TEMP/yousao-http.log" 2>&1 &
+      - name: Desktop, mobile, manual sync and offline tests
+        env:
+          YOUS_AO_QA_DIR: ${{ runner.temp }}/yousao-qa
+        run: node tests/browser.test.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pwa-qa
+          path: ${{ runner.temp }}/yousao-qa
+          if-no-files-found: ignore
+          retention-days: 7

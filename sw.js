@@ -1,7 +1,7 @@
 /* 酌有韶 service worker: keep the app shell on the device so it opens offline. */
-const CACHE = 'yousao-v3';
+const CACHE = 'yousao-v5';
 const SHELL = [
-  './', 'index.html', 'manifest.json', 'fonts/yousao-hand.woff',
+  './', 'index.html', 'manifest.json', 'manager-data.js', 'app-store.js', 'google-drive.js', 'manager-ui.js', 'fonts/yousao-hand.woff',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'
 ];
 
@@ -12,7 +12,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      .then(keys => Promise.all(keys.filter(k => k.startsWith('yousao-') && k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -23,6 +23,15 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
+  // Navigations see the latest shell immediately; offline uses the complete installed shell.
+  if (req.mode === 'navigate') {
+    e.respondWith(fetch(req).then(res => {
+      if (!res.ok) throw new Error('navigation failed');
+      const copy = res.clone(); e.waitUntil(caches.open(CACHE).then(c => c.put('index.html', copy)));
+      return res;
+    }).catch(() => caches.match('index.html')));
+    return;
+  }
   e.respondWith(
     caches.match(req, { ignoreSearch: true }).then(hit => {
       const net = fetch(req).then(res => {
