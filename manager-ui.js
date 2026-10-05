@@ -24,7 +24,7 @@
         catch (e) { status = e.message || '操作失敗，資料未套用'; toast(status); }
         finally {
           busy = false;
-          document.querySelectorAll('[data-cloud-action]').forEach(b => b.disabled = false);
+          document.querySelectorAll('[data-cloud-action]').forEach(b => b.disabled = b.dataset.cloudLocked === '1');
           const n = document.querySelector('#cloud-status'); if (n) n.textContent = status;
         }
       }
@@ -125,7 +125,7 @@
           selected[kind] = result.meta.id; if (kind === 'manager') rememberLink(result.meta);
           closeSheet(); status = '已上傳。'; await refresh(kind); toast('已上傳');
         }, 'btn primary');
-        if (unresolved) push.disabled = true;
+        if (unresolved) { push.disabled = true; push.dataset.cloudLocked = '1'; }
         actions.appendChild(push); wrap.appendChild(actions); openSheet(wrap, { kind: 'form' });
       }
       async function prepareUpload(kind, fresh = false) {

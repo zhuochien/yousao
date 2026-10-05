@@ -39,7 +39,7 @@ async function nav(page, view) {
       await route.fulfill({ contentType: 'application/json', headers: { ETag: '"test-version"' }, body: JSON.stringify(body) });
     });
     await page.goto(origin, { waitUntil: 'networkidle' });
-    await page.getByRole('heading', { name: '角色工作室', exact: true }).waitFor();
+    await page.getByRole('heading', { name: '角色工作室', level: 2, exact: true }).waitFor();
     await page.screenshot({ path: out + '/studio-desktop.png', fullPage: true });
     await page.getByRole('button', { name: '編輯角色專案' }).click();
     await page.locator('#p-character').fill('測試角色二');
@@ -48,7 +48,7 @@ async function nav(page, view) {
     await page.getByRole('heading', { name: '測試角色二', exact: true }).waitFor();
     assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('yousao.v1')).projects.p.stage), 'opening');
     await nav(page, 'cloud');
-    await page.getByRole('heading', { name: '雲端與經紀人', exact: true }).waitFor();
+    await page.getByRole('heading', { name: '雲端與經紀人', level: 2, exact: true }).waitFor();
     const downloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: '匯出創作工作檔', exact: true }).click();
     const downloaded = await downloadPromise, downloadedPath = await downloaded.path();
@@ -63,7 +63,7 @@ async function nav(page, view) {
     const backupPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: '下載改動前備份', exact: true }).click(); await backupPromise;
     await page.getByRole('button', { name: '採用勾選的排程', exact: true }).click();
-    await page.getByRole('heading', { name: '角色工作室', exact: true }).waitFor();
+    await page.getByRole('heading', { name: '角色工作室', level: 2, exact: true }).waitFor();
     let state = await page.evaluate(() => JSON.parse(localStorage.getItem('yousao.v1')));
     assert.equal(state.tasks['new-task'].minutes, 30); assert.equal(state.moods.today.note, '私人心情不可上傳'); assert.equal(state.projects.day.title, '朝的私人工作');
     await nav(page, 'cloud'); await page.getByRole('button', { name: '連線設定', exact: true }).click();
@@ -84,10 +84,14 @@ async function nav(page, view) {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     await page.evaluate(async () => { await navigator.serviceWorker.ready; if (!navigator.serviceWorker.controller) await new Promise(resolve => navigator.serviceWorker.addEventListener('controllerchange', resolve, { once: true })); });
     await context.setOffline(true); await page.reload({ waitUntil: 'domcontentloaded' });
-    await page.getByRole('heading', { name: '角色工作室', exact: true }).waitFor();
+    await page.getByRole('heading', { name: '角色工作室', level: 2, exact: true }).waitFor();
     state = await page.evaluate(() => JSON.parse(localStorage.getItem('yousao.v1'))); assert.equal(state.tasks['new-task'].minutes, 30);
     assert.deepEqual(errors, []);
     console.log('PASS desktop/mobile forms, private-data export, proposal preview/apply, OAuth/Drive mock, idempotence, token privacy, layout and offline restart.');
     await context.close();
+  } catch (e) {
+    const page = browser.contexts()[0]?.pages()[0];
+    if (page) await page.screenshot({ path: out + '/failure.png', fullPage: true }).catch(() => {});
+    throw e;
   } finally { await browser.close(); }
 })().catch(e => { console.error(e); process.exitCode = 1; });
